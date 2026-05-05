@@ -16,7 +16,8 @@
     "lint:web": "nx run insights-web:lint",
     "lint": "nx run-many -t lint --all",
     "test": "nx run-many -t test --all",
-    "many:build": "nx run-many -t build --all"
+    "many:build": "nx run-many -t build --all",
+    "seed:mongo:dev": "mongosh \"${MONGODB_URI:-mongodb://127.0.0.1:27017/qa-pbi}\" --file docker/mongo/seed-insights-keycloak-dev.js"
   },
   "devDependencies": {
     "nx": "20.6.4"

@@ -133,7 +133,7 @@ Ajuste `body` conforme a rota (string JSON ou objeto serializado, conforme o han
 
 A configuração padrão do stage `local` está em [config/local.yml](./config/local.yml). Várias chaves aceitam override por variável de ambiente (ex.: `MONGODB_URI`, `KEYCLOAK_URL`, credenciais **Azure** para Power BI). Para desenvolvimento dentro do Docker da raiz do repositório, use o arquivo `.env` descrito em [.env.docker.example](../.env.docker.example).
 
-**Seed Mongo (dev):** com Docker na raiz, o seed corre na **primeira** subida com volume Mongo vazio (ficheiro em `/docker-entrypoint-initdb.d/`, sem contentor extra). Repetição manual: ver [README da raiz](../README.md#como-rodar). **Keycloak não está em uso** no dia a dia. Após aplicar o seed, o login clássico local usa **dev@example.com** / **DevPass123!** — ver [Credenciais e como fazer login](../README.md#credenciais-padrão-e-como-fazer-login-desenvolvimento-local).
+**Seed Mongo (dev):** com Docker na raiz, o **`mongo-seed`** e o initdb aplicam tenant, customer e utilizadores **`dev@example.com`** (USER) e **`admin@example.com`** (ADMIN). Ver [README da raiz](../README.md#como-rodar). **Keycloak não está em uso** no dia a dia. Login local: **[Credenciais](../README.md#credenciais-padrão-e-como-fazer-login-desenvolvimento-local)**.
 
 ### Power BI e Azure
 

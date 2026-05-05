@@ -78,7 +78,7 @@ graph LR
 
 ### Login em desenvolvimento (utilizador do seed Mongo)
 
-Com a API e o Mongo a correr e o **seed** aplicado (primeira subida do volume ou comando em [README da raiz](../README.md#como-rodar)), aceda a **[/login](http://localhost:3000/login)** e use **dev@example.com** / **DevPass123!**. Explicação do cabeçalho **`Origin`**, distinção login clássico vs Keycloak e exemplo `curl`: [Credenciais padrão e como fazer login](../README.md#credenciais-padrão-e-como-fazer-login-desenvolvimento-local).
+Com a API e o Mongo a correr e o **seed** aplicado (ver [README da raiz](../README.md#como-rodar)), aceda a **[/login](http://localhost:3000/login)**. Utilize **`admin@example.com`** / **`DevPass123!`** para **Configurações** (ADMIN) ou **`dev@example.com`** / **`DevPass123!`** para o fluxo como utilizador final (USER). Cabeçalho **`Origin`**, login clássico vs Keycloak e `curl`: [Credenciais](../README.md#credenciais-padrão-e-como-fazer-login-desenvolvimento-local).
 
 ### Usar com Docker (monorepo)
 

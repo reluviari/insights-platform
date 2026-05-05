@@ -1,9 +1,13 @@
-# Insights Platform — stack local: MongoDB (seed na 1.ª inicialização do volume) + API + Next.js.
+# Insights Platform — stack local: MongoDB + seed idempotente (`mongo-seed`) antes da API + Next.js.
 # Power BI / Azure AD na nuvem — configure credenciais no .env para embed real (veja .env.docker.example).
 #
 # Uso na raiz:
 #   cp .env.docker.example .env
 #   docker compose up --build
+#
+# O contentor `mongo-seed` corre **após** o Mongo ficar healthy e **antes** da API subir (tenant, customer,
+# utilizador dev com password bcrypt). Idempotente em cada `compose up`. O initdb.d continua útil na 1.ª
+# inicialização de volume vazio (rápido).
 #
 # Keycloak / SSO: fora de uso — perfil `keycloak` e docker/KEYCLOAK.md só para futuro.
 #
@@ -39,6 +43,24 @@ services:
     networks:
       - insights
 
+  mongo-seed:
+    image: mongo:6
+    container_name: insights-mongo-seed
+    restart: "no"
+    networks:
+      - insights
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongo:27017/qa-pbi}
+    volumes:
+      - ./docker/mongo/seed-insights-keycloak-dev.js:/seed-insights-keycloak-dev.js:ro
+    command:
+      - sh
+      - -c
+      - mongosh "$$MONGODB_URI" --file /seed-insights-keycloak-dev.js
+
   api:
     build:
       context: ./insights.api
@@ -52,6 +74,7 @@ services:
       INSIGHTS_ADMIN_CREDENTIALS: ${INSIGHTS_ADMIN_CREDENTIALS:-placeholder_access;placeholder_secret}
       # Evita poluir logs do serverless-offline com aviso de maintenance do aws-sdk v2 (migração v3 é separada).
       AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: ${AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE:-1}
+      INSIGHTS_AUTH_VERBOSE: ${INSIGHTS_AUTH_VERBOSE:-}
       AZURE_CLIENT_ID: ${AZURE_CLIENT_ID:-}
       AZURE_CLIENT_SECRET_VALUE: ${AZURE_CLIENT_SECRET_VALUE:-}
       AZURE_TENANT_ID: ${AZURE_TENANT_ID:-}
@@ -68,6 +91,8 @@ services:
     depends_on:
       mongo:
         condition: service_healthy
+      mongo-seed:
+        condition: service_completed_successfully
     networks:
       - insights
 

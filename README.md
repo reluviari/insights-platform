@@ -70,10 +70,11 @@ graph LR
 graph LR
     Browser["Navegador"]
 
-    subgraph Compose["Docker Compose insights-platform\n(Mongo + API + Web; seed na 1.ª init do volume)"]
+    subgraph Compose["Docker Compose insights-platform\n(Mongo + mongo-seed + API + Web)"]
         Web["insights.web\nNext dev :3000"]
         Api["insights.api\nserverless-offline :4001"]
         MongoLocal[("MongoDB :27017")]
+        SeedJob["mongo-seed\n(mongosh --file)"]
     end
 
     MicrosoftCloud["Azure AD + Power BI\ninternet"]
@@ -81,6 +82,7 @@ graph LR
     Browser --> Web
     Web -->|"HTTP"| Api
     Api --> MongoLocal
+    SeedJob -->|"mongosh"| MongoLocal
     Api -->|"HTTPS"| MicrosoftCloud
     Web -->|"Embed iframe"| MicrosoftCloud
 ```
@@ -138,25 +140,21 @@ cp .env.docker.example .env
 docker compose up --build
 ```
 
-Aguarde o Compose construir as imagens de desenvolvimento da API e do Web (primeira vez é mais lenta por causa de `npm ci` / `yarn install` dentro do Dockerfile). O **MongoDB** expõe healthcheck interno; quando está **healthy**, o contentor da **API** arranca e o **Web** depende da API.
+Aguarde o Compose construir as imagens de desenvolvimento da API e do Web (primeira vez é mais lenta por causa de `npm ci` / `yarn install` dentro do Dockerfile). O **MongoDB** expõe healthcheck interno; quando está **healthy**, corre o contentor **one-shot `mongo-seed`** (`mongosh` com o mesmo script JS); quando termina com sucesso, a **API** arranca e o **Web** depende da API.
 
 **Seed dos dados de desenvolvimento**
 
-O ficheiro [`docker/mongo/seed-insights-keycloak-dev.js`](docker/mongo/seed-insights-keycloak-dev.js) está montado em **`/docker-entrypoint-initdb.d/01-seed-insights-dev.js`** dentro do **serviço `mongo`**. A imagem oficial executa scripts dessa pasta **automaticamente apenas quando o diretório de dados do Mongo está vazio** — típico na primeira subida com um volume novo, ou depois de `docker compose down -v`. **Não há um contentor separado só para seed.**
+Em **cada** `docker compose up`, o serviço **`mongo-seed`** executa [`docker/mongo/seed-insights-keycloak-dev.js`](docker/mongo/seed-insights-keycloak-dev.js) contra `MONGODB_URI` (por defeito `mongodb://mongo:27017/qa-pbi`). O script é **idempotente** (`updateOne` / `replaceOne` com upsert) — garante tenant, customer e dois utilizadores com hash bcrypt de **`DevPass123!`**: **`dev@example.com`** (papel **USER**, consumo de relatórios) e **`admin@example.com`** (papel **ADMIN**, Configurações / gestão de clientes, departamentos, usuários e relatórios), mesmo em volumes antigos onde o campo `password` estava vazio.
 
-Se já tens um volume Mongo antigo **sem** ter corrido nunca este init, ou se o login **401** ocorre com `dev@example.com` / `DevPass123!` porque o documento do utilizador **não tinha** campo `password` (dados anteriores ao seed atual), aplica o seed manualmente — o script faz **`updateOne`** por e-mail e **atualiza o hash** mesmo quando o utilizador já existia com outro `_id`:
+Além disso, o mesmo ficheiro está montado em **`/docker-entrypoint-initdb.d/01-seed-insights-dev.js`** no **serviço `mongo`**: a imagem oficial corre esses scripts **apenas na primeira inicialização** do volume vazio (rápido).
+
+Se precisares de repetir só o hash localmente **sem** Mongo no Compose: na pasta `insights.api`, `npm run seed:dev-password` (usa o driver Node; funciona também com `docker compose exec api …`). Para aplicar o seed completo **a partir da raiz do monorepo** (caminho estável para o `.js`): `npm run seed:mongo:dev`.
+
+Fallback manual com `mongosh` no contentor Mongo:
 
 ```bash
 docker compose exec mongo mongosh mongodb://127.0.0.1:27017/qa-pbi /docker-entrypoint-initdb.d/01-seed-insights-dev.js
 ```
-
-Alternativa a partir do host (precisa de `mongosh` local e Mongo acessível):
-
-```bash
-cd insights.api && npm run seed:mongo:keycloak
-```
-
-(o script npm usa `MONGODB_URI`; por defeito aponta para `mongodb://127.0.0.1:27017/qa-pbi`.)
 
 **Fluxo de autenticação atual:** login por **e-mail + senha** contra a API, JWT emitido com segredo da API (`SECRET_TOKEN` / config por ambiente). **`KEYCLOAK_URL`** deve permanecer **vazio** no fluxo normal — Keycloak não faz parte do uso atual.
 
@@ -179,18 +177,19 @@ Modelo de variáveis para Compose e apps: [.env.docker.example](.env.docker.exam
 
 ### Credenciais padrão e como fazer login (desenvolvimento local)
 
-Estas credenciais destinam-se **apenas** a desenvolvimento local com o **seed Mongo** aplicado (primeira inicialização do volume ou comando `exec mongosh` acima). **Não** são credenciais de produção.
+Estas credenciais destinam-se **apenas** a desenvolvimento local com o **seed Mongo** aplicado (automático via **`mongo-seed`** no Compose, initdb na primeira subida de volume vazio, ou comandos manuais da secção anterior). **Não** são credenciais de produção.
 
-| Campo | Valor |
-|-------|--------|
-| **URL da aplicação** | Abrir **[http://localhost:3000](http://localhost:3000)** no navegador |
-| **E-mail** | `dev@example.com` |
-| **Senha** | `DevPass123!` |
+Abra **[http://localhost:3000/login](http://localhost:3000/login)** no navegador.
+
+| Persona | E-mail | Senha (apenas desenvolvimento local) |
+|---------|--------|--------------------------------------|
+| **Administrador da plataforma / tenant** (menu **Configurações**: clientes, departamentos, usuários, relatórios) | `admin@example.com` | `DevPass123!` |
+| **Usuário final** (consumo de relatórios no portal) | `dev@example.com` | `DevPass123!` |
 
 **Passo a passo na interface**
 
-1. Com `docker compose up` em execução e sem erros nos logs de `mongo`, `api` e `web`, aceda a **http://localhost:3000/login**.
-2. Introduza **dev@example.com** e **DevPass123!** e submeta o formulário.
+1. Com `docker compose up` em execução e sem erros nos logs de `mongo`, `mongo-seed`, `api` e `web`, aceda a **http://localhost:3000/login**.
+2. Para administrar a plataforma, use **`admin@example.com`** e **`DevPass123!`** — deve aparecer **Configurações** no menu (papel **ADMIN**). Para testar o fluxo só como utilizador final, use **`dev@example.com`** / **`DevPass123!`** (papel **USER**).
 3. Em caso de sucesso, a API devolve um JWT e o Redux / fluxo do front guarda o estado de sessão conforme implementação atual em `insights.web`.
 
 **Por que o `Origin` importa**
@@ -199,15 +198,22 @@ O handler HTTP de login na API lê o cabeçalho **`Origin`** (ou `origin`) e usa
 
 **Login clássico vs Keycloak**
 
-O formulário da página `/login` usa o fluxo **clássico** (`POST /api/auth/sign-in` **sem** campo `type: keycloak`). O utilizador seed inclui campo **`password`** com hash **bcrypt** gerado com as mesmas convenções da API (`bcryptjs`). **Keycloak não está ligado** no Compose por defeito; o botão “Continuar com SSO (Keycloak)” fica desativado enquanto `NEXT_PUBLIC_INSIGHTS_SSO_ENABLED=false`.
+O formulário da página `/login` usa o fluxo **clássico** (`POST /api/auth/sign-in` **sem** campo `type: keycloak`). Os utilizadores de seed têm campo **`password`** com hash **bcrypt** (`bcryptjs`). **Keycloak não está ligado** no Compose por defeito; o botão “Continuar com SSO (Keycloak)” fica desativado enquanto `NEXT_PUBLIC_INSIGHTS_SSO_ENABLED=false`.
 
 **Teste com `curl`** (útil para distinguir problema de front de problema de API ou dados):
 
 ```bash
+# Utilizador final (USER)
 curl -sS -X POST http://localhost:4001/api/auth/sign-in \
   -H "Content-Type: application/json" \
   -H "Origin: http://localhost:3000" \
   -d '{"email":"dev@example.com","password":"DevPass123!"}'
+
+# Administrador do tenant (ADMIN)
+curl -sS -X POST http://localhost:4001/api/auth/sign-in \
+  -H "Content-Type: application/json" \
+  -H "Origin: http://localhost:3000" \
+  -d '{"email":"admin@example.com","password":"DevPass123!"}'
 ```
 
 Em sucesso, a resposta inclui **`accessToken`** (JWT assinado pela API). Em erro com credenciais incorretas ou tenant/origem inválidos, a API devolve erros HTTP e mensagens de negócio conforme `ResponseError` / constantes do projeto — sem expor stack traces ao cliente.
@@ -243,8 +249,8 @@ O front **depende** da API estar acessível na URL configurada em **`NEXT_PUBLIC
 
 ### Modo desenvolvimento (hot reload sem rebuild das imagens da raiz)
 
-1. Subir apenas Mongo — por exemplo `docker compose up -d mongo` na raiz, ou o `docker-compose.yml` dentro de `insights.api`.
-2. Se o volume Mongo já existia e o script `docker-entrypoint-initdb.d` **não** correu, executar o **`docker compose exec mongo mongosh ...`** indicado na secção “Stack completa”.
+1. Subir Mongo — por exemplo `docker compose up -d mongo` na raiz, ou o `docker-compose.yml` dentro de `insights.api`.
+2. **Dados dev:** se não estás a subir a stack completa (API/Web), corre **`docker compose run --rm mongo-seed`** na raiz após o Mongo estar **healthy** — aplica o mesmo script que no initdb. Alternativa: **`docker compose exec mongo mongosh …`** como na secção “Stack completa”, ou `npm run seed:mongo:dev` / `npm run seed:dev-password` no host.
 3. Terminal 1: `cd insights.api && npm run dev` (Serverless Offline, porta **4001** por defeito).
 4. Terminal 2: `cd insights.web && yarn dev` (Next.js, porta **3000** por defeito).
 
@@ -256,7 +262,7 @@ Alternativa limitada na API (Fastify, porta **45000**, subconjunto de rotas): `n
 
 1. **Logs:** `docker compose logs mongo` e `docker compose logs api` (e `web` se necessário).
 2. **Porta 27017 ocupada** no host: pare outro Mongo ou altere o mapeamento para algo como **`27018:27017`**. Entre contentors na rede Compose continua **`mongo:27017`** — normalmente **não** precisa de alterar `MONGODB_URI` para API dentro do Compose. Se correr a API **fora** do Docker contra Mongo publicado no host, use a porta publicada (ex.: `mongodb://127.0.0.1:27018/qa-pbi`).
-3. **Seed não aplicado** num volume já existente: o init só corre com dados Mongo **vazios**. Use o `docker compose exec mongo mongosh ...` ou `docker compose down -v` (**apaga dados** desse volume nomeado do projeto).
+3. **Seed / password dev:** na stack completa, **`mongo-seed`** corre antes da API. Se só tens `mongo`, usa **`docker compose run --rm mongo-seed`** ou os comandos da secção “Stack completa”. O init em `/docker-entrypoint-initdb.d/` só corre com volume Mongo **vazio**.
 4. **Recomeço limpo:** `docker compose down -v` seguido de `docker compose up --build`.
 
 ---
@@ -272,7 +278,9 @@ Alternativa limitada na API (Fastify, porta **45000**, subconjunto de rotas): `n
 | `yarn dev` | `insights.web` | Servidor de desenvolvimento Next.js. |
 | `yarn build` · `yarn start` | `insights.web` | Build de produção e servidor Next após build. |
 | `yarn lint` | `insights.web` | `next lint`. |
-| `npm run seed:mongo:keycloak` | `insights.api` | Aplica o seed Mongo no URI atual (`mongosh` + ficheiro em `../docker/mongo/`). |
+| `npm run seed:mongo:dev` | Raiz do monorepo | Seed completo (`mongosh` + `docker/mongo/seed-insights-keycloak-dev.js`; usa `MONGODB_URI`). |
+| `npm run seed:mongo:keycloak` | `insights.api` | Igual ao anterior no host com repo completo (`mongosh` + `../docker/mongo/…`). **Não** use dentro do contentor `api` (não há `../docker`). |
+| `npm run seed:dev-password` | `insights.api` | Atualiza o bcrypt dos utilizadores de seed (**`dev@example.com`** e **`admin@example.com`**) via Node (útil no contentor `api` ou host). |
 | `npx nx graph` | Raiz | Grafo de dependências entre projetos Nx. |
 | `npx nx run insights-api:dev` | Raiz | Target Nx que delega para `npm run dev` na API. |
 | `npx nx run insights-web:dev` | Raiz | Target Nx que delega para `yarn dev` no front. |

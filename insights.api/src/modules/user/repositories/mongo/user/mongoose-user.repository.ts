@@ -64,11 +64,18 @@ export class MongooseUserRepository implements IUserRepository {
       return null;
     }
 
-    let query = UserModel.findOne({ email: normalized });
-
+    /* Campos com schema `select: false` (ex.: password): usar lean() para o plain object
+     * incluir o hash — Document#toObject() pode omitir mesmo após .select('+password'). */
     if (includePasswordHash) {
-      query = query.select("+password");
+      let q = UserModel.findOne({ email: normalized }).select("+password");
+      if (populates?.length) {
+        q = q.populate(populates);
+      }
+      const plain = await this.handleErrors(q.lean().exec());
+      return plain ? toUser(plain) : null;
     }
+
+    let query = UserModel.findOne({ email: normalized });
 
     if (populates?.length) {
       query = query.populate(populates);

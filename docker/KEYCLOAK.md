@@ -29,7 +29,7 @@ Fluxo geral do monorepo: [README principal](../README.md#como-rodar).
 | Artefato | Função |
 |----------|--------|
 | [`keycloak/import/insights-dev-realm.json`](./keycloak/import/insights-dev-realm.json) | Realm **`insights-dev`**, client **`insights-web`**, utilizador **`dev@example.com`** / **`DevPass123!`** (para testes SSO quando ativo). |
-| [`mongo/seed-insights-keycloak-dev.js`](./mongo/seed-insights-keycloak-dev.js) | Mongo: tenant, customer, user **`dev@example.com`** com **`password`** em bcrypt (senha em claro **`DevPass123!`** — login **clássico** na UI, sem `type: keycloak`; usa-se **já** com Compose; Keycloak não obrigatório). |
+| [`mongo/seed-insights-keycloak-dev.js`](./mongo/seed-insights-keycloak-dev.js) | Mongo: tenant, customer, **`dev@example.com`** (USER) e **`admin@example.com`** (ADMIN) com **`password`** em bcrypt (senha em claro **`DevPass123!`** — login **clássico** na UI; Keycloak não obrigatório). |
 
 ## Front (`NEXT_PUBLIC_INSIGHTS_SSO_ENABLED`)
 

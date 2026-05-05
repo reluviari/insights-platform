@@ -147,4 +147,26 @@ describe("SignInUseCase", () => {
       } as SignInDto),
     ).rejects.toMatchObject({ statusCode: HttpStatus.UNAUTHORIZED });
   });
+
+  it("devolve accessToken quando administrador (ADMIN) faz login", async () => {
+    repo.findUserByEmail.mockResolvedValue({
+      _id: "507f191e810c19729de860e4",
+      name: "Administrador da plataforma (seed)",
+      email: "admin@example.com",
+      roles: ["ADMIN"],
+      isActive: true,
+      password: passwordHash,
+      status: true,
+      phone: "",
+    });
+
+    const result = await useCase.execute({
+      email: "admin@example.com",
+      password: passwordPlain,
+      urlSlug: "http://localhost:3000",
+    } as SignInDto);
+
+    expect(result.accessToken).toBeDefined();
+    expect(repo.findUserByEmail).toHaveBeenCalledWith("admin@example.com", undefined, true);
+  });
 });

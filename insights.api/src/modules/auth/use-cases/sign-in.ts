@@ -8,6 +8,12 @@ import { DecodedAccessToken } from "../interfaces";
 import { hashCompareSync } from "@/utils/hash-compare";
 import { isValidUrlSlug } from "@/utils/valid-url-slug";
 
+function signInVerbose(reason: string): void {
+  if (process.env.INSIGHTS_AUTH_VERBOSE === "1") {
+    console.warn(`[auth/sign-in] ${reason}`);
+  }
+}
+
 export class SignInUseCase {
   constructor(private userRepository: IUserRepository) {}
 
@@ -20,6 +26,7 @@ export class SignInUseCase {
       !userEmail.trim() ||
       password.length === 0
     ) {
+      signInVerbose("rejected: missing_email_or_password");
       throw new ResponseError(ExceptionsConstants.UNAUTHORIZED, HttpStatus.UNAUTHORIZED);
     }
 
@@ -36,6 +43,7 @@ export class SignInUseCase {
     const user = await this.userRepository.findUserByEmail(normalizedEmail, undefined, true);
 
     if (!user) {
+      signInVerbose("rejected: user_not_found (same DB as MONGODB_URI?)");
       throw new ResponseError(ExceptionsConstants.UNAUTHORIZED, HttpStatus.UNAUTHORIZED);
     }
 
@@ -46,6 +54,9 @@ export class SignInUseCase {
     const validatePassword = hashCompareSync(password, user.password);
 
     if (!validatePassword) {
+      signInVerbose(
+        "rejected: password_mismatch_or_missing_hash (re-run seed / npm run verify:dev-login-data)",
+      );
       throw new ResponseError(ExceptionsConstants.UNAUTHORIZED, HttpStatus.UNAUTHORIZED);
     }
 
