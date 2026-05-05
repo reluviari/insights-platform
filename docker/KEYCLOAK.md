@@ -1,5 +1,14 @@
 # Keycloak local + seed (Docker)
 
+## Ordem recomendada (raiz do monorepo)
+
+1. `cp .env.docker.example .env`
+2. No `.env`: **`KEYCLOAK_URL=http://keycloak:8080`**
+3. `docker compose --profile keycloak up --build`
+4. Com o **Mongo** já a correr: `docker compose --profile seed run --rm mongo-seed`
+
+O mesmo fluxo está descrito no [README principal](../README.md#fluxo-keycloak-e-seed-mongo-no-docker).
+
 ## O que o repositório inclui
 
 | Artefato | Função |

@@ -77,7 +77,7 @@ graph LR
 
 ### Usar com Docker (monorepo)
 
-Na pasta **pai** (`insights-platform`), siga o tutorial com `docker compose`; o front já recebe `NEXT_PUBLIC_*` via `.env` na raiz — veja [.env.docker.example](../.env.docker.example).
+Na pasta **pai** (`insights-platform`), siga o tutorial com `docker compose`; o front já recebe `NEXT_PUBLIC_*` via `.env` na raiz — veja [.env.docker.example](../.env.docker.example). **Keycloak e seed Mongo:** [README da raiz](../README.md#fluxo-keycloak-e-seed-mongo-no-docker) e [docker/KEYCLOAK.md](../docker/KEYCLOAK.md).
 
 ### Power BI no navegador
 

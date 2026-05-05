@@ -133,6 +133,8 @@ Ajuste `body` conforme a rota (string JSON ou objeto serializado, conforme o han
 
 A configuração padrão do stage `local` está em [config/local.yml](./config/local.yml). Várias chaves aceitam override por variável de ambiente (ex.: `MONGODB_URI`, `KEYCLOAK_URL`, credenciais **Azure** para Power BI). Para desenvolvimento dentro do Docker da raiz do repositório, use o arquivo `.env` descrito em [.env.docker.example](../.env.docker.example).
 
+**Keycloak + seed Mongo no Docker** (ordem: `cp .env.docker.example .env` → `KEYCLOAK_URL=http://keycloak:8080` → `docker compose --profile keycloak up --build` → `docker compose --profile seed run --rm mongo-seed`): ver [README da raiz](../README.md#fluxo-keycloak-e-seed-mongo-no-docker) e [docker/KEYCLOAK.md](../docker/KEYCLOAK.md).
+
 ### Power BI e Azure
 
 Tokens de embed e chamadas à API do Power BI exigem credenciais reais no Azure AD. Sem isso a aplicação sobe, mas fluxos de embed/sincronização podem falhar — isso é esperado.

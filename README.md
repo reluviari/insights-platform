@@ -130,9 +130,19 @@ docker compose up --build
 
 Seguindo os passos acima, **deve subir sem erro**: **MongoDB**, **API** (Serverless Offline em `:4001`) e **Next.js** (`:3000`). O **`GET /api/health-check`** deve responder (teste com `curl` na seção abaixo).
 
-**Não está “garantido” pelo README** no sentido de produto completo: **não há seed** de tenants/usuários no repositório — login e telas autenticadas dependem de dados que **você** coloca no MongoDB (e de **Keycloak**, se ativar o profile). **Power BI / embed** continuam a precisar de **credenciais Azure** reais; sem elas a stack sobe, mas fluxos de relatório/token podem falhar (como já descrito em [Pré-requisitos](#pré-requisitos) e [Credenciais e dados de teste](#credenciais-e-dados-de-teste)).
+**Não está “garantido” pelo README** no sentido de produto completo: **login clássico** (password em Mongo) e fluxos completos dependem de dados que **você** define; **seed opcional** para **Keycloak** está em [docker/KEYCLOAK.md](docker/KEYCLOAK.md) (ver secção abaixo). **Power BI / embed** continuam a precisar de **credenciais Azure** reais; sem elas a stack sobe, mas fluxos de relatório/token podem falhar (como já descrito em [Pré-requisitos](#pré-requisitos) e [Credenciais e dados de teste](#credenciais-e-dados-de-teste)).
 
-Aguarde subir **MongoDB**, **API** e **Web**. Keycloak opcional: `docker compose --profile keycloak up --build` e `KEYCLOAK_URL=http://keycloak:8080` no `.env` (import automático do realm `insights-dev` — ver [docker/KEYCLOAK.md](docker/KEYCLOAK.md)). **Seed Mongo** alinhado a esse realm: com o Mongo a correr, `docker compose --profile seed run --rm mongo-seed`.
+#### Fluxo Keycloak e seed Mongo no Docker
+
+Na **raiz** do monorepo:
+
+1. `cp .env.docker.example .env`
+2. No `.env`, definir **`KEYCLOAK_URL=http://keycloak:8080`** (ver [.env.docker.example](.env.docker.example)).
+3. `docker compose --profile keycloak up --build`
+4. Quando o **Mongo** estiver a correr (serviço `mongo` na stack), executar:  
+   `docker compose --profile seed run --rm mongo-seed`
+
+Mais detalhes e testes (`curl`, credenciais `dev@example.com`): [docker/KEYCLOAK.md](docker/KEYCLOAK.md).
 
 | Serviço        | URL |
 |----------------|-----|
@@ -166,7 +176,7 @@ Resposta esperada: JSON de health do serviço (sem autenticação nesta rota).
 
 | Item | Observação |
 |------|------------|
-| **Usuários / tenants** | Não há **seed** ou credenciais padrão versionadas; dependem de dados no **MongoDB** e, se usado, de **Keycloak** (realm alinhado a `tenants.realmId`). |
+| **Usuários / tenants** | Sem dados na base, login clássico não funciona. Para **Keycloak** existe seed opcional: [docker/KEYCLOAK.md](docker/KEYCLOAK.md) e secção [Fluxo Keycloak e seed Mongo no Docker](#fluxo-keycloak-e-seed-mongo-no-docker). |
 | **Azure / Power BI** | **Client ID**, **secret**, **tenant** e usuário/senha (ou fluxo definido no projeto) entram no `.env` ou em `config/local.yml` via variáveis de ambiente — veja [.env.docker.example](.env.docker.example). |
 | **NextAuth** | Em dev, defina `NEXTAUTH_SECRET` no `.env` (exemplo no `.env.docker.example`). |
 
