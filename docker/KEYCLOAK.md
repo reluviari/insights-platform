@@ -1,13 +1,24 @@
-# Keycloak local + seed (Docker)
+# Keycloak local + SSO opcional (Docker)
 
-## Ordem recomendada (raiz do monorepo)
+**Por que é opcional:** o produto usa por defeito **login com e-mail e senha** (JWT emitido pela API com dados em **MongoDB**). **Keycloak** entra apenas quando a organização precisa de **SSO corporativo** (OpenID Connect): mesmo servidor de identidade para várias apps, realms por cliente, integração com AD corporativo, etc. Por isso a stack **Docker Compose por defeito** não inclui Keycloak — mantém o arranque local mais simples.
+
+Quando quiser testar ou desenvolver o fluxo **Keycloak**, os artefactos ficam versionados (`docker/keycloak/import`, seed Mongo alinhado) e o Compose expõe o perfil **`keycloak`**.
+
+## Arranque rápido (com Keycloak)
+
+Na raiz do monorepo:
 
 1. `cp .env.docker.example .env`
-2. No `.env`: **`KEYCLOAK_URL=http://keycloak:8080`**
+2. No `.env`: **`KEYCLOAK_URL=http://keycloak:8080`** (rede Docker — obrigatório para a API falar com o Keycloak dentro dos containers).
 3. `docker compose --profile keycloak up --build`
-4. Com o **Mongo** já a correr: `docker compose --profile seed run --rm mongo-seed`
 
-O mesmo fluxo está descrito no [README principal](../README.md#fluxo-keycloak-e-seed-mongo-no-docker).
+Na primeira subida com perfil, o contentor **`mongo-seed`** corre uma vez (idempotente) e alinha tenant/utilizador no Mongo ao realm importado. Se precisar de repetir só o seed com Mongo já a correr:
+
+```bash
+docker compose --profile keycloak run --rm mongo-seed
+```
+
+O mesmo fluxo está descrito no [README principal](../README.md#como-rodar).
 
 ## O que o repositório inclui
 
@@ -16,36 +27,25 @@ O mesmo fluxo está descrito no [README principal](../README.md#fluxo-keycloak-e
 | [`keycloak/import/insights-dev-realm.json`](./keycloak/import/insights-dev-realm.json) | Realm **`insights-dev`**, client público **`insights-web`** (Direct Access Grants ativo), utilizador **`dev@example.com`** / **`DevPass123!`**. |
 | [`mongo/seed-insights-keycloak-dev.js`](./mongo/seed-insights-keycloak-dev.js) | **MongoDB**: tenant com `realmId: insights-dev`, `urlSlug: https://localhost:3000`, customer com `clientId: insights-web`, user com o mesmo e-mail do Keycloak. |
 
-Importação do realm corre **na primeira subida** do container com `--import-realm` (dados “limpos”). Se precisar reimportar, recrie o container do Keycloak (sem volume persistente, o modo `start-dev` costuma ser efémero; caso use volume, apague os dados do Keycloak antes).
+Importação do realm corre na subida do container com `--import-realm`. Se precisar de forçar reimportação com dados “limpos”, recrie o container/volume do Keycloak conforme a sua política local.
 
-## Subir Keycloak com Compose
+## Front (bandeira SSO)
 
-Na raiz do monorepo, no `.env` (a partir do `.env.docker.example`):
+O botão **“Continuar com SSO (Keycloak)”** na página de login responde à variável **`NEXT_PUBLIC_INSIGHTS_SSO_ENABLED`**.
 
-```env
-KEYCLOAK_URL=http://keycloak:8080
-```
+- **`false` (por defeito):** o utilizador vê o fluxo SSO como **desativado**, com texto que remete ao README — fluxo OIDC completo pode ser ligado mais tarde.
+- **`true`:** o botão deixa de estar bloqueado; neste repositório o redirect OIDC no cliente pode ser completado quando o fluxo estiver implementado (ver handlers `/auth/sign-in` com `type: keycloak` na API).
 
-Suba API + Mongo + Web + Keycloak:
-
-```bash
-docker compose --profile keycloak up --build
-```
+## Console admin
 
 - **Admin console:** [http://localhost:8080](http://localhost:8080) — utilizador/senha por defeito `admin` / `admin` (ou `KEYCLOAK_ADMIN` / `KEYCLOAK_ADMIN_PASSWORD`).
 - **URL interna para a API** (rede Docker): `http://keycloak:8080` — é esta que deve estar em `KEYCLOAK_URL` para o serviço `api`.
 
 A API resolve `KEYCLOAK_URL` a partir de `config/local.yml` (`${env:KEYCLOAK_URL}`) quando corre o `serverless-offline` no container.
 
-## Seed Mongo (tenant + user)
+## Correr só o seed Mongo (host local)
 
-Com **Mongo** a correr (por exemplo stack já levantada):
-
-```bash
-docker compose --profile seed run --rm mongo-seed
-```
-
-Ou no host (Mongo em `localhost:27017`, base `qa-pbi`):
+Mongo em `localhost:27017`, base `qa-pbi`:
 
 ```bash
 mongosh "mongodb://127.0.0.1:27017/qa-pbi" --file docker/mongo/seed-insights-keycloak-dev.js
@@ -83,6 +83,6 @@ As rotas protegidas que usam **`Authorize()`** esperam JWT assinado com `SECRET_
 
 ## Variáveis úteis (Compose)
 
-Definidas na raiz `.env` / [.env.docker.example](../.env.docker.example): `KEYCLOAK_URL`, credenciais admin opcionais `KEYCLOAK_ADMIN`, `KEYCLOAK_ADMIN_PASSWORD`.
+Definidas na raiz `.env` / [.env.docker.example](../.env.docker.example): `KEYCLOAK_URL`, credenciais admin opcionais `KEYCLOAK_ADMIN`, `KEYCLOAK_ADMIN_PASSWORD`, `NEXT_PUBLIC_INSIGHTS_SSO_ENABLED`.
 
 Para fluxo de trabalho com IA: [docs/ai-workflow.md](../docs/ai-workflow.md).

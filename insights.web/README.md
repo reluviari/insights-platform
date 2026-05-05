@@ -64,6 +64,7 @@ graph LR
 
 2. Em `.env`, confira pelo menos:
    - `NEXT_PUBLIC_INSIGHTS_API` — URL da API (ex.: `http://localhost:4001` com serverless-offline na sua máquina ou em Docker com portas publicadas nos mesmos valores).
+   - `NEXT_PUBLIC_INSIGHTS_SSO_ENABLED` — em dev costuma ser `false` (botão SSO visível mas desativado, com explicação na UI).
    - `NEXTAUTH_URL` — normalmente `http://localhost:3000` em dev.
    - `NEXTAUTH_SECRET` — defina um valor qualquer em desenvolvimento.
 
@@ -77,7 +78,7 @@ graph LR
 
 ### Usar com Docker (monorepo)
 
-Na pasta **pai** (`insights-platform`), siga o tutorial com `docker compose`; o front já recebe `NEXT_PUBLIC_*` via `.env` na raiz — veja [.env.docker.example](../.env.docker.example). **Keycloak e seed Mongo:** [README da raiz](../README.md#fluxo-keycloak-e-seed-mongo-no-docker) e [docker/KEYCLOAK.md](../docker/KEYCLOAK.md).
+Na pasta **pai** (`insights-platform`), siga o tutorial com `docker compose`; o front já recebe `NEXT_PUBLIC_*` via `.env` na raiz — veja [.env.docker.example](../.env.docker.example). **SSO / Keycloak:** opcional (perfil `keycloak`); ver [README da raiz](../README.md#como-rodar) e [docker/KEYCLOAK.md](../docker/KEYCLOAK.md).
 
 ### Power BI no navegador
 
@@ -104,6 +105,7 @@ Veja [`.env.example`](.env.example). Principais:
 |----------|-----------|
 | `NEXT_PUBLIC_INSIGHTS_API` | Base URL da API |
 | `NEXT_PUBLIC_EMBED_PBI_APP_URL` | Host do cliente Power BI (embed) |
+| `NEXT_PUBLIC_INSIGHTS_SSO_ENABLED` | `true` habilita o botão SSO na `/login` (fluxo OIDC no cliente pode ser completado depois); `false` mostra SSO como desativado com texto explicativo |
 | `NEXTAUTH_URL` / `NEXTAUTH_SECRET` | NextAuth |
 
 Para Docker no monorepo: [.env.docker.example](../.env.docker.example).

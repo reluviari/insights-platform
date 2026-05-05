@@ -1,12 +1,12 @@
 # Insights Platform
 
-Monorepo do produto **Insights Platform** (pasta do repositório: `insights-platform`), com **interface Next.js** (`insights.web`), **API serverless TypeScript** (`insights.api`, AWS Lambda via Serverless Framework), multi-tenant, **MongoDB**, **Azure AD** e integração **Microsoft Power BI** (embed).
+Monorepo **Nx** com **`insights.web`** (Next.js), **`insights.api`** (Serverless / Lambda + MongoDB), multi-tenant e integração **Microsoft Power BI** (Azure AD + embed).
 
-**Código-fonte:** [github.com/reluviari/insights-platform](https://github.com/reluviari/insights-platform)
+**Repositório:** [github.com/reluviari/insights-platform](https://github.com/reluviari/insights-platform)
 
-## Ambiente de produção / demo
+## Demo / ambientes
 
-Não há URLs públicas de demo fixas neste repositório: **front e API em produção dependem do deploy da sua organização** (AWS, domínio do tenant, credenciais Microsoft). Para testar localmente, use a seção [Como rodar](#como-rodar).
+Não há URLs públicas de demo fixas: **front e API em produção dependem do deploy da sua organização** (AWS, tenant, credenciais Microsoft). Para desenvolvimento local, use [Como rodar](#como-rodar).
 
 ## Diagrama de arquitetura
 
@@ -62,7 +62,7 @@ graph LR
 graph LR
     Browser["Navegador"]
 
-    subgraph Compose["Docker Compose insights-platform"]
+    subgraph Compose["Docker Compose insights-platform\n(Mongo + API + Web)"]
         Web["insights.web\nNext dev :3000"]
         Api["insights.api\nserverless-offline :4001"]
         MongoLocal[("MongoDB :27017")]
@@ -76,6 +76,8 @@ graph LR
     Api -->|"HTTPS"| MicrosoftCloud
     Web -->|"Embed iframe"| MicrosoftCloud
 ```
+
+_Keycloak (SSO) não faz parte da stack por defeito — perfil opcional `keycloak`; ver [docker/KEYCLOAK.md](docker/KEYCLOAK.md)._
 
 ### Sequência — obter token de embed e exibir relatório
 
@@ -102,156 +104,109 @@ sequenceDiagram
 
 > Versão com **módulos internos**: [insights.api/README.md](insights.api/README.md#arquitetura) · [insights.web/README.md](insights.web/README.md#arquitetura) · Keycloak local: [docker/KEYCLOAK.md](docker/KEYCLOAK.md)
 
----
-
 ## Pré-requisitos
 
-- [Docker](https://docs.docker.com/get-docker/) e Docker Compose (ex.: Docker Desktop), para a stack recomendada
-- **Sem Docker:** Node.js **16+** em `insights.api`, **20+** em `insights.web`, **Yarn 1.x** no front (há `yarn.lock`), **MongoDB** acessível (ex.: porta `27017`)
-- Conta **Microsoft** com **Azure AD** + **Power BI** configurados **se** for testar embed e tokens reais (credenciais via `.env`)
+- **Docker** e Docker Compose (stack recomendada na raiz)
+- **Sem Docker:** Node **16+** na API, **20+** no front; **Yarn 1.x** no web (`yarn.lock`); **MongoDB** acessível
+- **Azure AD + Power BI** apenas se for testar embed e tokens reais (credenciais via `.env`)
 
 ## Como rodar
 
 ### Stack completa (recomendado)
 
-Na **raiz** do repositório (`insights-platform`):
+Na raiz (`insights-platform`):
 
 ```bash
 cp .env.docker.example .env
-```
-
-Edite o `.env` com segredos **Azure** / **Keycloak** quando necessário (sem Azure, a stack sobe; embed pode falhar).
-
-```bash
 docker compose up --build
 ```
 
-#### O que o Docker cobre (só com o `.env` do exemplo)
+Sobe **MongoDB**, **API** (Serverless Offline `:4001`) e **Next.js** (`:3000`). Login padrão na UI: **e-mail e senha** → API → JWT (Mongo). Variáveis: [.env.docker.example](.env.docker.example) (front: `NEXT_PUBLIC_*`; API: Mongo, Azure opcional; `KEYCLOAK_URL` vazio por defeito).
 
-Seguindo os passos acima, **deve subir sem erro**: **MongoDB**, **API** (Serverless Offline em `:4001`) e **Next.js** (`:3000`). O **`GET /api/health-check`** deve responder (teste com `curl` na seção abaixo).
-
-**Não está “garantido” pelo README** no sentido de produto completo: **login clássico** (password em Mongo) e fluxos completos dependem de dados que **você** define; **seed opcional** para **Keycloak** está em [docker/KEYCLOAK.md](docker/KEYCLOAK.md) (ver secção abaixo). **Power BI / embed** continuam a precisar de **credenciais Azure** reais; sem elas a stack sobe, mas fluxos de relatório/token podem falhar (como já descrito em [Pré-requisitos](#pré-requisitos) e [Credenciais e dados de teste](#credenciais-e-dados-de-teste)).
-
-#### Fluxo Keycloak e seed Mongo no Docker
-
-Na **raiz** do monorepo:
-
-1. `cp .env.docker.example .env`
-2. No `.env`, definir **`KEYCLOAK_URL=http://keycloak:8080`** (ver [.env.docker.example](.env.docker.example)).
-3. `docker compose --profile keycloak up --build`
-4. Quando o **Mongo** estiver a correr (serviço `mongo` na stack), executar:  
-   `docker compose --profile seed run --rm mongo-seed`
-
-Mais detalhes e testes (`curl`, credenciais `dev@example.com`): [docker/KEYCLOAK.md](docker/KEYCLOAK.md).
-
-| Serviço        | URL |
-|----------------|-----|
-| Frontend       | [http://localhost:3000](http://localhost:3000) |
-| API (offline)  | [http://localhost:4001](http://localhost:4001) |
+| Serviço | URL |
+|---------|-----|
+| Frontend | [http://localhost:3000](http://localhost:3000) |
+| API (offline) | [http://localhost:4001](http://localhost:4001) |
+| Health check | `GET http://localhost:4001/api/health-check` |
 | MongoDB (host) | `localhost:27017` |
-| Keycloak (profile) | [http://localhost:8080](http://localhost:8080) |
-
-### Apps isolados
-
-Cada pasta pode rodar sozinha (front **precisa** da API em algum lugar):
-
-```bash
-cd insights.api && docker compose up -d
-cd insights.api && npm install && npm run dev
-
-cd insights.web && cp .env.example .env && yarn install && yarn dev
-```
-
-Detalhes: [insights.api/README.md](insights.api/README.md) · [insights.web/README.md](insights.web/README.md)
-
-### Verificar que está rodando
+| Keycloak (perfil `keycloak`) | [http://localhost:8080](http://localhost:8080) |
 
 ```bash
 curl -s http://localhost:4001/api/health-check
 ```
 
-Resposta esperada: JSON de health do serviço (sem autenticação nesta rota).
+### Keycloak / SSO (opcional)
 
-## Credenciais e dados de teste
+SSO corporativo (**OpenID Connect**) quando precisar federar identidades — não é obrigatório para o fluxo local típico.
+
+```bash
+# No .env: KEYCLOAK_URL=http://keycloak:8080
+docker compose --profile keycloak up --build
+```
+
+Detalhes e utilizador de teste: [docker/KEYCLOAK.md](docker/KEYCLOAK.md). Botão SSO na `/login`: `NEXT_PUBLIC_INSIGHTS_SSO_ENABLED` (ver [.env.docker.example](.env.docker.example)).
+
+### Apps isolados
+
+```bash
+cd insights.api && docker compose up -d && npm install && npm run dev
+
+cd insights.web && cp .env.example .env && yarn install && yarn dev
+```
+
+O front precisa da API em algum host — ver READMEs: [insights.api/README.md](insights.api/README.md) · [insights.web/README.md](insights.web/README.md)
+
+### Modo desenvolvimento (hot reload sem rebuild da imagem)
+
+1. Subir só o Mongo (`insights.api/docker-compose.yml` ou stack da raiz).
+2. `cd insights.api && npm run dev` (`:4001`)
+3. `cd insights.web && yarn dev` (`:3000`)
+
+Alternativa API: `npm run dev:local` (Fastify `:45000`) — [insights.api/README.md](insights.api/README.md).
+
+### Credenciais e dados de teste
 
 | Item | Observação |
 |------|------------|
-| **Usuários / tenants** | Sem dados na base, login clássico não funciona. Para **Keycloak** existe seed opcional: [docker/KEYCLOAK.md](docker/KEYCLOAK.md) e secção [Fluxo Keycloak e seed Mongo no Docker](#fluxo-keycloak-e-seed-mongo-no-docker). |
-| **Azure / Power BI** | **Client ID**, **secret**, **tenant** e usuário/senha (ou fluxo definido no projeto) entram no `.env` ou em `config/local.yml` via variáveis de ambiente — veja [.env.docker.example](.env.docker.example). |
-| **NextAuth** | Em dev, defina `NEXTAUTH_SECRET` no `.env` (exemplo no `.env.docker.example`). |
+| **Tenant / utilizadores** | Login clássico exige registos em Mongo coerentes com a API. Com perfil `keycloak`, há seed idempotente — [docker/KEYCLOAK.md](docker/KEYCLOAK.md). |
+| **Azure / Power BI** | Client ID, secret, tenant, utilizador — [.env.docker.example](.env.docker.example) e `insights.api/config/local.yml`. |
+| **NextAuth** | `NEXTAUTH_SECRET` em dev — exemplo na raiz `.env.docker.example`. |
 
-## Modo de desenvolvimento
-
-Para hot reload **sem** rebuild de imagem a cada mudança:
-
-1. Suba só o Mongo (`insights.api/docker-compose.yml` ou stack completa).
-2. Terminal 1: `cd insights.api && npm run dev` (Serverless Offline, `:4001`).
-3. Terminal 2: `cd insights.web && yarn dev` (`:3000`).
-
-Alternativa avançada na API: `npm run dev:local` (Fastify na porta **45000** — ver [insights.api/README.md](insights.api/README.md)).
-
-## Scripts disponíveis
+## Scripts úteis
 
 | Comando | Onde | Descrição |
 |---------|------|-----------|
-| `npm run dev` | `insights.api` | Serverless Offline (simula API Gateway + Lambdas) |
-| `npm run dev:local` | `insights.api` | Fastify local + rota `POST /lambda` (subconjunto de rotas) |
-| `npm run build` | `insights.api` | `tsc` |
-| `npm test` | `insights.api` | Jest |
-| `npm run test-coverage` | `insights.api` | Jest com cobertura |
-| `npm run lint` | `insights.api` | ESLint em `src/**` |
-| `yarn dev` | `insights.web` | Next.js dev server |
-| `yarn build` | `insights.web` | Build de produção |
-| `yarn start` | `insights.web` | Servidor Next após build |
-| `yarn lint` | `insights.web` | `next lint` |
+| `npm run dev` | `insights.api` | Serverless Offline |
+| `npm run dev:local` | `insights.api` | Fastify local (`:45000`) |
+| `npm run build` / `npm test` / `npm run lint` | `insights.api` | Build, testes, lint |
+| `yarn dev` / `yarn build` / `yarn lint` | `insights.web` | Dev, build, lint |
+| `npx nx graph` | raiz | Grafo Nx |
+| `npx nx run insights-api:dev` | raiz | Delega `npm run dev` na API |
+| `npx nx run insights-web:dev` | raiz | Delega `yarn dev` no web |
+| `npx nx run-many -t lint --all` | raiz | Lint em projetos com target |
+| `npx nx affected -t lint,test,build` | raiz | Só afetados pelo diff (`main` em [nx.json](nx.json)) |
 
-## Monorepo Nx (raiz)
-
-A raiz possui **`package.json`** com **npm workspaces** (`insights.api`, `insights.web`) e **[Nx](https://nx.dev/)** para orquestrar tarefas, **cache** e **`nx affected`** (comparando com `main` — veja `defaultBase` em [nx.json](nx.json)).
-
-**Pré-requisito na raiz:** Node.js **18+** (recomendado **20**) e `npm install` uma vez.
-
-| Comando na raiz | Descrição |
-|-----------------|-----------|
-| `npx nx graph` | Grafo de projetos |
-| `npx nx run insights-api:dev` | Sobe Serverless Offline (delega a `npm run dev` na API) |
-| `npx nx run insights-web:dev` | Sobe Next dev (via `yarn dev` no front) |
-| `npx nx run-many -t lint --all` | Lint em todos os projetos com target `lint` |
-| `npx nx affected -t lint,test,build` | Só projetos afetados pelo diff (útil no CI) |
-| `npx nx run insights-api:package-serverless` | `serverless package` na API (artefato de deploy) |
-
-Projetos e targets estão em [insights.api/project.json](insights.api/project.json) e [insights.web/project.json](insights.web/project.json).
-
-CI com **filtros por pasta** (só API ou só Web): [.github/workflows/](.github/workflows/).
-
-Fluxo de trabalho com assistência de AI: [docs/ai-workflow.md](docs/ai-workflow.md) · Agentes (Cursor): [docs/insights-platform-agents-setup.md](docs/insights-platform-agents-setup.md).
-
-**Unificar Git em um único repositório** (hoje pode haver `.git` só dentro de `insights.api` / `insights.web`): [docs/git-github.md](docs/git-github.md).
+Targets: [insights.api/project.json](insights.api/project.json) · [insights.web/project.json](insights.web/project.json)
 
 ## Endpoints da API (exemplos)
 
-Rotas reais seguem o `serverless.yml` (prefixo **`/api`** com Serverless Offline). Exemplos:
+Prefixo **`/api`** com Serverless Offline. Lista completa: `serverless.yml` e `insights.api/src/modules/**/functions/*.yml`.
 
 | Método | Rota | Auth | Descrição |
 |--------|------|------|-----------|
-| GET | `/api/health-check` | Não | Saúde do serviço |
-| POST | `/api/auth/sign-in` | Não | Login (fluxo depende de corpo e tenant) |
-| — | `/api/reports/...` | Em geral sim | Relatórios, páginas, sincronização Power BI |
-| — | `/api/embed-token/...` | Em geral sim | Token de embed (Azure → Power BI) |
-
-Lista completa: painel do Serverless Offline ao subir `npm run dev` ou inspeção de `insights.api/serverless.yml` e `src/modules/**/functions/*.yml`.
+| GET | `/api/health-check` | Não | Saúde |
+| POST | `/api/auth/sign-in` | Não | Login |
+| — | `/api/reports/...` | Sim | Relatórios / Power BI |
+| — | `/api/embed-token/...` | Sim | Token de embed |
 
 ## Escopo funcional
 
-Especificação de produto (visão, personas, fora de escopo, critérios de aceite): **[docs/PRODUCT_SCOPE.md](docs/PRODUCT_SCOPE.md)**.
+Detalhe de produto: **[docs/PRODUCT_SCOPE.md](docs/PRODUCT_SCOPE.md)**
 
-Em resumo:
-
-- **Multi-tenant (SaaS):** tenant → clientes → departamentos → usuários → relatórios.
-- **Autenticação:** JWT; **Keycloak** opcional para SSO corporativo.
-- **Administração:** clientes, usuários, departamentos, vínculo de relatórios.
-- **Power BI:** embed com token seguro, sincronização e filtros (`report-filter`, `target-filter`, etc.).
-- **Plataforma BI white-label:** dashboards embebidos, permissões por contexto organizacional.
+- Multi-tenant: tenant → clientes → departamentos → utilizadores → relatórios  
+- Autenticação: JWT (Mongo); Keycloak opcional (SSO)  
+- Administração de clientes, utilizadores, relatórios e permissões  
+- Power BI: embed, sincronização, filtros  
 
 ## Stack
 
@@ -259,188 +214,81 @@ Em resumo:
 
 | Tecnologia | Uso |
 |------------|-----|
-| Next.js 13 | App router / páginas, SSR onde aplicável |
+| Next.js 13 | Páginas / roteamento |
 | React 18 | UI |
-| Redux Toolkit + RTK Query | Estado e dados remotos |
-| Tailwind CSS + SASS | Estilo |
-| powerbi-client-react | Embed de relatórios no browser |
+| Redux Toolkit + RTK Query | Estado e API |
+| Tailwind + SASS | Estilo |
+| powerbi-client-react | Embed |
 | TypeScript | Tipagem |
 
 ### Backend (`insights.api`)
 
 | Tecnologia | Uso |
 |------------|-----|
-| Serverless Framework 3 | Deploy AWS Lambda + API Gateway |
+| Serverless Framework 3 | Lambda + API Gateway |
 | Node.js 16.x | Runtime declarado no `serverless.yml` |
-| TypeScript | Código-fonte |
 | MongoDB + Mongoose | Persistência |
-| Middy | Middlewares HTTP nas Lambdas |
-| Axios | Chamadas Azure / Power BI |
+| Middy | Middlewares Lambda |
+| Axios | Azure / Power BI |
 | Jest | Testes |
 
-### Monorepo e infraestrutura local
+### Monorepo
 
 | Item | Uso |
 |------|-----|
-| `docker-compose.yml` (raiz) | Mongo + API + Web (dev) |
-| `package.json` / `nx.json` (raiz) | Workspaces npm + Nx |
-| `insights.api/project.json`, `insights.web/project.json` | Targets Nx por app |
-| `.env.docker.example` | Modelo de variáveis para Compose |
-| `docker/KEYCLOAK.md` | SSO local opcional |
+| `package.json` / npm workspaces | `insights.api`, `insights.web` |
+| [nx.json](nx.json) + `project.json` | Nx, cache, `nx affected` |
+| [docker-compose.yml](docker-compose.yml) | Mongo + API + Web |
+| [.env.docker.example](.env.docker.example) | Modelo de env para Compose |
+| [docker/KEYCLOAK.md](docker/KEYCLOAK.md) | Keycloak opcional |
 
 ## Estrutura de pastas
 
 ```
 insights-platform/
-├── package.json
-├── package-lock.json
-├── nx.json
 ├── docker-compose.yml
 ├── .env.docker.example
+├── nx.json
+├── package.json
 ├── docs/
 │   ├── PRODUCT_SCOPE.md
 │   ├── ai-workflow.md
 │   ├── insights-platform-agents-setup.md
 │   └── git-github.md
-├── .cursor/
-│   └── rules/
 ├── docker/
 │   ├── KEYCLOAK.md
-│   ├── keycloak/
-│   │   └── import/          # realm Keycloak (ex.: insights-dev-realm.json)
+│   ├── keycloak/import/
 │   └── mongo/
-│       └── seed-insights-keycloak-dev.js
 ├── insights.api/
-│   ├── project.json
 │   ├── serverless.yml
-│   ├── config/
 │   ├── src/modules/
-│   │   ├── auth/
-│   │   ├── customer/
-│   │   ├── department/
-│   │   ├── embed-token/
-│   │   ├── report/
-│   │   ├── report-filter/
-│   │   ├── target-filter/
-│   │   ├── user/
-│   │   ├── tenant/
-│   │   ├── settings/
-│   │   └── health-check/
-│   ├── Dockerfile.dev
 │   └── README.md
 ├── insights.web/
-│   ├── project.json
-│   ├── src/pages/
-│   ├── src/components/
-│   ├── src/services/
-│   ├── src/store/
-│   ├── public/
-│   ├── Dockerfile.dev
+│   ├── src/
 │   └── README.md
 └── README.md
 ```
-
-(Ajuste fino de pastas do Next conforme o que existir em `insights.web/src` ou `app/` — o importante é localizar cada app.)
 
 ## Testes
 
 | Tipo | Onde | Comando |
 |------|------|---------|
-| Unitários / integração API | `insights.api` | `npm test` · `npm run test-coverage` |
-| Lint API | `insights.api` | `npm run lint` |
-| Lint Web | `insights.web` | `yarn lint` |
+| API | `insights.api` | `npm test` · `npm run test-coverage` · `npm run lint` |
+| Web | `insights.web` | `yarn lint` |
 
-Não há suíte E2E browser documentada na raiz; fluxos manuais via front em `localhost:3000`.
+E2E browser não documentado na raiz; fluxos manuais em `localhost:3000`.
 
 ## Integração contínua (CI)
 
-### Workflows na raiz (Nx + filtros por app)
-
 Em [.github/workflows/](.github/workflows/):
 
-- **`ci-api.yml`** — dispara em mudanças em `insights.api/**` (e arquivos Nx na raiz); roda `nx affected` / targets da API quando aplicável.
-- **`ci-web.yml`** — dispara em mudanças em `insights.web/**`; roda lint/build do front.
+| Workflow | Ideia |
+|----------|--------|
+| `ci-api.yml` | Mudanças em `insights.api/**` (e Nx na raiz) |
+| `ci-web.yml` | Mudanças em `insights.web/**` |
 
-Ajuste `branches` e versões de Node conforme a política da equipe.
-
-### Workflows legados dentro dos apps
-
-Podem ainda existir:
-
-- `insights.api/.github/workflows/` — ex.: *jira issue required*
-- `insights.web/.github/workflows/` — *security*, *jira issue required*
-
-Unifique ou desative duplicados após validar o CI da raiz.
-
-## Variáveis de ambiente (referência rápida)
-
-| Onde | Arquivo / uso |
-|------|----------------|
-| Stack Docker na raiz | Copiar [.env.docker.example](.env.docker.example) → `.env` na raiz |
-| API local / Lambda env | [insights.api/config/local.yml](insights.api/config/local.yml) + overrides `${env:...}` |
-| Front | [insights.web/.env.example](insights.web/.env.example) |
-
----
-
-## Contexto para a IA no Cursor (nova sessão ou após reabrir)
-
-Não há um comando que “carregue todo o projeto” de uma vez na memória da IA. O que **persiste no repositório** é o que o time versiona; o Cursor usa isso assim:
-
-| Mecanismo | O que faz |
-|-----------|------------|
-| **`.cursor/rules/*.mdc`** | Regras do projeto (várias com `alwaysApply: true`). Ao **abrir a pasta `insights-platform`** de novo, essas regras voltam a orientar o agente. |
-| **`docs/*.md` e READMEs** | **Não** entram inteiros em toda mensagem automaticamente. Para a primeira mensagem de uma conversa importante, use **@** (mention de arquivo) na caixa do Chat / Composer. |
-| **Git** | `git commit` / `git push` garantem que outra máquina ou outra sessão tenha os mesmos arquivos — não “alimenta” a IA sozinho, mas mantém o contexto do time. |
-
-### Recomendação: usar `@` na primeira mensagem
-
-Quando começar um tópico novo ou depois de **fechar e abrir** o Cursor, anexe os documentos principais com **`@`** (se a sua build do Cursor mostrar esses arquivos na busca):
-
-| Arquivo | Para quê |
-|---------|----------|
-| `@docs/PRODUCT_SCOPE.md` | Visão de produto, escopo, multi-tenant, Power BI |
-| `@docs/ai-workflow.md` | Fluxo disciplinado com IA |
-| `@docs/insights-platform-agents-setup.md` | Papéis dos agentes (orquestrador, front, back, DevOps, revisor) |
-| `@README.md` | Visão geral do monorepo e como rodar |
-
-Opcional: `@insights.api/README.md` ou `@insights.web/README.md` se a tarefa for só em um app.
-
-Regras adicionais **globais** (válidas em qualquer projeto): **Cursor → Settings → Cursor Settings → Rules** (ou equivalente na sua versão).
-
----
+Podem existir workflows legacy dentro de cada app — alinhar ou desativar após validar o CI da raiz.
 
 ## Desenvolvimento assistido por IA
 
-Este repositório foi estruturado para uso do **[Cursor](https://cursor.com)** (e ferramentas similares) como **colaborador disciplinado**, não como gerador automático de código sem critério.
-
-### Como usar na prática
-
-1. **Planejar antes de codar** — ler [docs/PRODUCT_SCOPE.md](docs/PRODUCT_SCOPE.md), READMEs e, se aplicável, o escopo da tarefa; propor o plano mínimo antes de mudanças grandes.
-2. **Agentes com papéis definidos** — orquestração, implementação front, implementação back, workspace/DevOps e revisão de escopo estão descritos em [docs/insights-platform-agents-setup.md](docs/insights-platform-agents-setup.md).
-3. **Regras persistentes** — o comportamento esperado da IA está em [`.cursor/rules/`](.cursor/rules/): arquitetura, monorepo Nx, API serverless, front Next, operação, testes e fluxo de trabalho.
-4. **Revisão antes de fechar uma fase** — conferir aderência ao escopo, às regras e a riscos (tenant, Azure/Power BI, segredos), conforme [docs/ai-workflow.md](docs/ai-workflow.md).
-
-Mais detalhes do fluxo: [docs/ai-workflow.md](docs/ai-workflow.md).
-
----
-
-## Visão geral de negócio (complementar)
-
-### Propósito
-
-Plataforma de **BI white-label** que permite oferecer dashboards **Power BI** como serviço, com **gestão multi-cliente**, **departamentos**, **usuários** e **controle de acesso**.
-
-### Modelo e hierarquia
-
-```
-Tenant → Customers → Departments → Users → Reports
-```
-
-### Proposta de valor
-
-- **Fornecedor:** monetização de BI como produto SaaS, operação centralizada.
-- **Cliente final:** analytics sem montar infraestrutura própria.
-- **Técnico:** escalabilidade serverless na AWS + ecossistema Microsoft (Power BI + Azure).
-
-Para **produtos e QA** testando só o ambiente local, priorize as seções [Como rodar](#como-rodar) e os READMEs por app acima.
-
+Fluxo e agentes: [docs/ai-workflow.md](docs/ai-workflow.md) · [docs/insights-platform-agents-setup.md](docs/insights-platform-agents-setup.md). Regras persistentes: [`.cursor/rules/`](.cursor/rules/). Git monorepo na raiz: [docs/git-github.md](docs/git-github.md).

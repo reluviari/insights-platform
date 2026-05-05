@@ -6,6 +6,7 @@ import Label from "@src/components/common/Label";
 import LinkHilight from "@src/components/common/LinkHilight";
 import { login } from "@src/services/login";
 import { selectLoginError, selectLoginLoading } from "@src/store/slices/login/selectors";
+import { toast } from "@src/utils/toast";
 import Head from "next/head";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -13,6 +14,8 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 import { useAppDispatch, useAppSelector } from "@src/store/hooks";
+
+const insightsSsoEnabled = process.env.NEXT_PUBLIC_INSIGHTS_SSO_ENABLED === "true";
 
 export default function Login() {
   const {
@@ -32,6 +35,15 @@ export default function Login() {
       setInactiveUserError(null);
     }
   }, [hasError]);
+
+  const handleSsoClick = () => {
+    toast({
+      type: "warning",
+      title: "SSO (Keycloak)",
+      message:
+        "O redirecionamento OpenID Connect no browser ainda não está ligado. Consulte README.md na raiz e docker/KEYCLOAK.md para subir o perfil Keycloak e completar o fluxo.",
+    });
+  };
 
   const onSubmit = async (data: any) => {
     try {
@@ -147,6 +159,52 @@ export default function Login() {
                   </Button>
                 </div>
               </form>
+
+              <div
+                className="mt-10 border-t border-neutral-200 pt-8"
+                role="region"
+                aria-labelledby="sso-login-heading"
+              >
+                <p
+                  id="sso-login-heading"
+                  className="text-center text-sm font-medium text-neutral-600 mb-4"
+                >
+                  ou
+                </p>
+                <Button
+                  type="button"
+                  size="medium"
+                  variant="secondary"
+                  full
+                  disabled={!insightsSsoEnabled}
+                  aria-describedby="sso-login-help"
+                  onClick={insightsSsoEnabled ? handleSsoClick : undefined}
+                >
+                  Continuar com SSO (Keycloak)
+                </Button>
+                <p
+                  id="sso-login-help"
+                  className="mt-3 text-xs leading-relaxed text-neutral-400 text-center"
+                >
+                  {insightsSsoEnabled ? (
+                    <>
+                      SSO está ligado neste ambiente (`NEXT_PUBLIC_INSIGHTS_SSO_ENABLED`). O fluxo
+                      completo no cliente pode ser implementado quando o Keycloak estiver
+                      configurado (ver documentação do monorepo).
+                    </>
+                  ) : (
+                    <>
+                      <strong className="font-medium text-neutral-500">SSO desativado.</strong> Este
+                      ambiente usa login com e-mail e senha na API. SSO corporativo (Keycloak /
+                      OpenID Connect) é opcional para organizações que precisam federar identidades;
+                      para ativar no futuro, configure o IdP e defina{" "}
+                      <code className="text-neutral-600">NEXT_PUBLIC_INSIGHTS_SSO_ENABLED=true</code>{" "}
+                      — ver README na raiz e <code className="text-neutral-600">docker/KEYCLOAK.md</code>
+                      .
+                    </>
+                  )}
+                </p>
+              </div>
             </div>
           </div>
         </div>
