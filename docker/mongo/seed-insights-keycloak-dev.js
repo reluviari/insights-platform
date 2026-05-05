@@ -64,4 +64,6 @@ db.users.replaceOne(
   { upsert: true },
 );
 
-print("insights-platform seed: tenants/customers/users OK (Keycloak realm insights-dev + client insights-web).");
+print(
+  "insights-platform seed: tenants/customers/users OK (dados de desenvolvimento; utilizador dev@example.com).",
+);
