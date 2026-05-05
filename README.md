@@ -62,7 +62,7 @@ graph LR
 graph LR
     Browser["Navegador"]
 
-    subgraph Compose["Docker Compose insights-platform\n(Mongo + API + Web)"]
+    subgraph Compose["Docker Compose insights-platform\n(Mongo → seed → API + Web)"]
         Web["insights.web\nNext dev :3000"]
         Api["insights.api\nserverless-offline :4001"]
         MongoLocal[("MongoDB :27017")]
@@ -121,7 +121,9 @@ cp .env.docker.example .env
 docker compose up --build
 ```
 
-Sobe **MongoDB**, **API** (Serverless Offline `:4001`) e **Next.js** (`:3000`). Login padrão na UI: **e-mail e senha** → API → JWT (Mongo). Variáveis: [.env.docker.example](.env.docker.example) (front: `NEXT_PUBLIC_*`; API: Mongo, Azure opcional; `KEYCLOAK_URL` vazio por defeito).
+Depois do **build**, o Compose sobe o **MongoDB**, corre o job **`mongo-seed`** uma vez (script idempotente em [`docker/mongo/seed-insights-keycloak-dev.js`](docker/mongo/seed-insights-keycloak-dev.js), alinha tenant/customer/utilizador de desenvolvimento — ver [Credenciais e dados de teste](#credenciais-e-dados-de-teste)), só então inicia a **API** (Serverless Offline `:4001`) e o **Next.js** (`:3000`). Para voltar a aplicar só o seed com o Mongo já a correr: `docker compose run --rm mongo-seed`.
+
+Login padrão na UI: **e-mail e senha** → API → JWT (Mongo). Variáveis: [.env.docker.example](.env.docker.example) (front: `NEXT_PUBLIC_*`; API: Mongo, Azure opcional; `KEYCLOAK_URL` vazio por defeito).
 
 | Serviço | URL |
 |---------|-----|
@@ -158,9 +160,10 @@ O front precisa da API em algum host — ver READMEs: [insights.api/README.md](i
 
 ### Modo desenvolvimento (hot reload sem rebuild da imagem)
 
-1. Subir só o Mongo (`insights.api/docker-compose.yml` ou stack da raiz).
-2. `cd insights.api && npm run dev` (`:4001`)
-3. `cd insights.web && yarn dev` (`:3000`)
+1. Subir só o Mongo (`insights.api/docker-compose.yml` ou `docker compose up -d mongo` na raiz).
+2. Aplicar dados de desenvolvimento no Mongo: `docker compose run --rm mongo-seed` (na raiz, com o Mongo acessível na rede Compose).
+3. `cd insights.api && npm run dev` (`:4001`)
+4. `cd insights.web && yarn dev` (`:3000`)
 
 Alternativa API: `npm run dev:local` (Fastify `:45000`) — [insights.api/README.md](insights.api/README.md).
 
@@ -168,7 +171,7 @@ Alternativa API: `npm run dev:local` (Fastify `:45000`) — [insights.api/README
 
 | Item | Observação |
 |------|------------|
-| **Tenant / utilizadores** | Login clássico exige registos em Mongo coerentes com a API. Com perfil `keycloak`, há seed idempotente — [docker/KEYCLOAK.md](docker/KEYCLOAK.md). |
+| **Tenant / utilizadores (dev)** | Em cada `docker compose up --build`, o **mongo-seed** corre antes da API e cria/atualiza tenant (slug `https://localhost:3000`), customer e utilizador **`dev@example.com`** alinhados ao realm Keycloak **insights-dev**. Login **Keycloak** (`type: keycloak`): palavra-passe **`DevPass123!`** quando o Keycloak está no ar — [docker/KEYCLOAK.md](docker/KEYCLOAK.md). Login **clássico** na UI depende da API aceitar credenciais gravadas em Mongo (o seed não define hash de senha para esse fluxo). |
 | **Azure / Power BI** | Client ID, secret, tenant, utilizador — [.env.docker.example](.env.docker.example) e `insights.api/config/local.yml`. |
 | **NextAuth** | `NEXTAUTH_SECRET` em dev — exemplo na raiz `.env.docker.example`. |
 

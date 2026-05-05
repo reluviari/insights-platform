@@ -1,11 +1,11 @@
-# Insights Platform — stack local por defeito: MongoDB + API (serverless-offline) + Next.js.
+# Insights Platform — stack local: MongoDB → mongo-seed (job idempotente) → API + Next.js.
 # Power BI / Azure AD na nuvem — configure credenciais no .env para embed real (veja .env.docker.example).
 #
 # Uso na raiz:
 #   cp .env.docker.example .env
 #   docker compose up --build
 #
-# SSO corporativo (Keycloak) é opcional — ver comentários em keycloak / mongo-seed e docker/KEYCLOAK.md.
+# Keycloak (SSO) é opcional — perfil `keycloak`; ver docker/KEYCLOAK.md.
 #
 # O Compose lê o arquivo ".env" na raiz apenas para interpolar variáveis abaixo.
 
@@ -64,6 +64,8 @@ services:
     depends_on:
       mongo:
         condition: service_healthy
+      mongo-seed:
+        condition: service_completed_successfully
     networks:
       - insights
 
@@ -119,8 +121,6 @@ services:
   mongo-seed:
     image: mongo:6
     container_name: insights-mongo-seed
-    profiles:
-      - keycloak
     volumes:
       - ./docker/mongo/seed-insights-keycloak-dev.js:/seed.js:ro
     networks:

@@ -1,24 +1,26 @@
 # Keycloak local + SSO opcional (Docker)
 
-**Por que é opcional:** o produto usa por defeito **login com e-mail e senha** (JWT emitido pela API com dados em **MongoDB**). **Keycloak** entra apenas quando a organização precisa de **SSO corporativo** (OpenID Connect): mesmo servidor de identidade para várias apps, realms por cliente, integração com AD corporativo, etc. Por isso a stack **Docker Compose por defeito** não inclui Keycloak — mantém o arranque local mais simples.
+**Por que Keycloak é opcional:** o produto usa por defeito **login com e-mail e senha** (JWT emitido pela API com dados em **MongoDB**). **Keycloak** entra quando a organização precisa de **SSO corporativo** (OpenID Connect): IdP partilhado, realms por cliente, AD corporativo, etc.
 
-Quando quiser testar ou desenvolver o fluxo **Keycloak**, os artefactos ficam versionados (`docker/keycloak/import`, seed Mongo alinhado) e o Compose expõe o perfil **`keycloak`**.
+**Seed Mongo na stack por defeito:** em cada `docker compose up --build` na **raiz**, o job **`mongo-seed`** corre automaticamente depois do Mongo ficar saudável e **antes** da API (`docker/mongo/seed-insights-keycloak-dev.js`, idempotente). Cria tenant, customer e utilizador **`dev@example.com`** alinhados ao realm **insights-dev** (útil para testes com Keycloak e para dados base em Mongo).
+
+Para repetir **só** o seed (Mongo já a correr na mesma stack Compose):
+
+```bash
+docker compose run --rm mongo-seed
+```
 
 ## Arranque rápido (com Keycloak)
 
-Na raiz do monorepo:
+Para subir também o IdP local e testar SSO na API (`KEYCLOAK_URL`):
 
 1. `cp .env.docker.example .env`
-2. No `.env`: **`KEYCLOAK_URL=http://keycloak:8080`** (rede Docker — obrigatório para a API falar com o Keycloak dentro dos containers).
+2. No `.env`: **`KEYCLOAK_URL=http://keycloak:8080`**
 3. `docker compose --profile keycloak up --build`
 
-Na primeira subida com perfil, o contentor **`mongo-seed`** corre uma vez (idempotente) e alinha tenant/utilizador no Mongo ao realm importado. Se precisar de repetir só o seed com Mongo já a correr:
+O **mongo-seed** já terá corrido na stack por defeito; o Keycloak importa o realm em `docker/keycloak/import`.
 
-```bash
-docker compose --profile keycloak run --rm mongo-seed
-```
-
-O mesmo fluxo está descrito no [README principal](../README.md#como-rodar).
+Fluxo geral: [README principal](../README.md#como-rodar).
 
 ## O que o repositório inclui
 

@@ -2,8 +2,8 @@
  * Seed idempotente: tenant + customer + user alinhados ao realm Keycloak `insights-dev`
  * (clientId `insights-web`, utilizador dev@example.com / DevPass123!).
  *
- * Executar (Compose com perfil Keycloak sobe este job uma vez; repetir à mão se precisar):
- *   docker compose --profile keycloak run --rm mongo-seed
+ * Na stack Compose da raiz o job mongo-seed corre automaticamente antes da API.
+ * Para repetir só o seed: docker compose run --rm mongo-seed
  * ou, no host (Mongo local):
  *   mongosh "mongodb://127.0.0.1:27017/qa-pbi" --file docker/mongo/seed-insights-keycloak-dev.js
  *
