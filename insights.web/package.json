@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test": "jest",
     "prepare": "husky install"
   },
   "dependencies": {
@@ -49,6 +50,7 @@
   },
   "devDependencies": {
     "@types/axios": "^0.14.0",
+    "@types/jest": "^29.5.12",
     "@types/lodash": "^4.14.197",
     "@types/node": "20.3.3",
     "@types/qs": "^6.9.8",
@@ -63,7 +65,9 @@
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-react": "^7.32.2",
     "husky": "^8.0.3",
+    "jest": "^29.7.0",
     "prettier": "^2.8.8",
+    "ts-jest": "^29.1.2",
     "typescript": "5.1.6"
   },
   "resolutions": {

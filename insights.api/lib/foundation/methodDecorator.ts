@@ -147,7 +147,7 @@ export function Method() {
             const DtoClass = bodyDtoClasses[bodyParams[0]];
             if (DtoClass) {
               const dtoInstance = plainToInstance(DtoClass, parsedRaw);
-              const errors = await validate(dtoInstance);
+              const errors = await validate(dtoInstance as object);
               if (errors.length > 0) {
                 throw new ValidationError(errors, HttpStatus.BAD_REQUEST);
               }
@@ -162,7 +162,7 @@ export function Method() {
           const DtoClass = pathDtoClasses[pathParams[0]];
           if (DtoClass) {
             const dtoInstance = plainToInstance(DtoClass, pathParameters);
-            const errors = await validate(dtoInstance);
+            const errors = await validate(dtoInstance as object);
             if (errors.length > 0) {
               throw new ValidationError(errors, HttpStatus.BAD_REQUEST);
             }
@@ -174,7 +174,7 @@ export function Method() {
           const DtoClass = queryDtoClasses[queryParams[0]];
           if (DtoClass) {
             const dtoInstance = plainToInstance(DtoClass, queryStringParameters);
-            const errors = await validate(dtoInstance);
+            const errors = await validate(dtoInstance as object);
             if (errors.length > 0) {
               throw new ValidationError(errors, HttpStatus.BAD_REQUEST);
             }

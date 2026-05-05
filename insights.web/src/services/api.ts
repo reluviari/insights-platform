@@ -10,6 +10,7 @@ import { loginActions } from "@src/store/slices/login";
 import { selectAuthToken } from "@src/store/slices/login/selectors";
 import axios from "axios";
 import qs from "qs";
+import { hasMoreItems, mergePaginationItems } from "@src/utils/pagination-helpers";
 
 axios.defaults.baseURL = `${process.env.NEXT_PUBLIC_INSIGHTS_API}/api`;
 axios.defaults.withCredentials = false;
@@ -80,18 +81,4 @@ export const baseQueryMiddleware: BaseQueryFn<
   return result;
 };
 
-export const mergePaginationItems = (currentCache: any, newItems: any) => {
-  const uniqueNewItems =
-    newItems?.rows?.filter((newItem: any) => {
-      return !currentCache?.rows?.some((cachedItem: any) => cachedItem.id === newItem.id);
-    }) || [];
-
-  return {
-    ...newItems,
-    rows: [...currentCache?.rows, ...uniqueNewItems],
-  };
-};
-
-export const hasMoreItems = ({ page, pageSize, count }: any) => {
-  return page * pageSize < count;
-};
+export { hasMoreItems, mergePaginationItems };

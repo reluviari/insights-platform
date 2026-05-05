@@ -1,6 +1,6 @@
 import { ExceptionsConstants } from "@/commons/consts/exceptions";
 import { IUserRepository } from "@/modules/user/interfaces";
-import * as jwt from "jsonwebtoken";
+import jwt, { SignOptions } from "jsonwebtoken";
 import { SignInDto } from "../dtos";
 import { ScopeEnum } from "../enums";
 import { HttpStatus, ResponseError } from "@foundation/lib";
@@ -50,6 +50,11 @@ export class SignInUseCase {
     }
 
     const { _id, name, email, roles } = user;
+
+    const jwtSignOptions: SignOptions = {
+      expiresIn: (process.env.SECRET_TOKEN_EXPIRE ?? "24h") as SignOptions["expiresIn"],
+    };
+
     const accessToken = jwt.sign(
       {
         id: _id,
@@ -60,9 +65,7 @@ export class SignInUseCase {
         scope: [ScopeEnum.USER_ACCESS_TOKEN],
       },
       String(process.env.SECRET_TOKEN),
-      {
-        expiresIn: String(process.env.SECRET_TOKEN_EXPIRE),
-      },
+      jwtSignOptions,
     );
     const payload = jwt.decode(accessToken);
     const { iat: createdTokenAt, roles: userRoles } = payload as DecodedAccessToken;

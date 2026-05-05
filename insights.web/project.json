@@ -31,6 +31,13 @@
         "command": "yarn lint",
         "cwd": "{projectRoot}"
       }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "yarn test",
+        "cwd": "{projectRoot}"
+      }
     }
   },
   "tags": ["scope:web", "type:app"]

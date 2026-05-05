@@ -3,6 +3,8 @@ import type { Config } from "@jest/types";
 const config: Config.InitialOptions = {
   preset: "ts-jest",
   testEnvironment: "node",
+  roots: ["<rootDir>/src", "<rootDir>/lib"],
+  forceExit: true,
   moduleNameMapper: {
     "^@functions/(.*)$": "<rootDir>/src/functions/$1",
     "^@libs/(.*)$": "<rootDir>/src/libs/$1",
