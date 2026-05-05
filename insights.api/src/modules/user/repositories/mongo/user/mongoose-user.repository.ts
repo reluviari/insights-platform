@@ -1,12 +1,7 @@
 import { UserModel } from "./user.schema";
 import { User } from "@/modules/user/entities";
 import { toUser } from "../utils";
-import {
-  AuthCredentialsUser,
-  IUserRepository,
-  UpdateUser,
-  WhereUser,
-} from "@/modules/user/interfaces";
+import { IUserRepository, UpdateUser, WhereUser } from "@/modules/user/interfaces";
 import { ExceptionsConstants } from "@/commons/consts/exceptions";
 import { HttpStatus, ResponseError } from "@foundation/lib";
 import { CustomerModel } from "@/modules/customer/repositories/mongo/customer/customer.schema";
@@ -63,38 +58,6 @@ export class MongooseUserRepository implements IUserRepository {
     );
 
     return userDoc ? toUser(userDoc.toObject()) : null;
-  }
-
-  async findAuthCredentialsByEmail(email: string): Promise<AuthCredentialsUser | null> {
-    const trimmed = email.trim();
-    if (!trimmed) {
-      return null;
-    }
-
-    const escaped = trimmed.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-    const doc = await this.handleErrors(
-      UserModel.findOne({
-        email: { $regex: new RegExp(`^${escaped}$`, "i") },
-      })
-        .lean()
-        .exec(),
-    );
-
-    if (!doc) {
-      return null;
-    }
-
-    const plain = doc as Record<string, unknown>;
-
-    return {
-      _id: String(plain._id),
-      email: String(plain.email ?? ""),
-      name: String(plain.name ?? ""),
-      roles: Array.isArray(plain.roles) ? (plain.roles as string[]) : [],
-      isActive: plain.isActive !== false,
-      password: plain.password != null ? String(plain.password) : undefined,
-    };
   }
 
   async findUserByPasswordToken(

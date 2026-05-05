@@ -4,22 +4,10 @@ import { User } from "../entities";
 import { WhereUser } from "./where-user.interface";
 import { UpdateUser } from "./update-user.interface";
 
-/** Snapshot mínimo para login clássico (lean, sem populate / toUser). */
-export type AuthCredentialsUser = {
-  _id: string;
-  email: string;
-  name: string;
-  roles: string[];
-  isActive: boolean;
-  password?: string;
-};
-
 export interface IUserRepository {
   create(data: User): Promise<User>;
   updateMany(data: User[]): Promise<UpdateResult | null>;
   findUserByEmail(email: string, populates?: PopulateOptions[]): Promise<User | null>;
-  /** Login e-mail+senha: leitura direta no Mongo (lean), inclui password e ignora maiúsculas no e-mail. */
-  findAuthCredentialsByEmail(email: string): Promise<AuthCredentialsUser | null>;
   findUserByPasswordToken(
     passwordToken: string,
     populates?: PopulateOptions[],

@@ -20,9 +20,14 @@ import { DefinePasswordUseCase } from "../use-cases/define-password";
 import { IResponseValidateToken, TokenValidate } from "@/modules/auth/dtos/token-validate";
 import { ValidateTokenUseCase } from "@/modules/auth/use-cases/validate-token";
 
-interface RequestHeaders {
-  Origin?: string;
-  origin?: string;
+function headerFirst(headers: Record<string, string>, name: string): string | undefined {
+  const target = name.toLowerCase();
+  for (const [key, value] of Object.entries(headers)) {
+    if (key.toLowerCase() === target && value != null && String(value).trim() !== "") {
+      return String(value);
+    }
+  }
+  return undefined;
 }
 
 export class AuthController {
@@ -32,9 +37,9 @@ export class AuthController {
   @Method()
   public async auth(
     @Body(SignInDto) body: SignInDto,
-    @Headers { Origin, origin }: RequestHeaders,
+    @Headers headers: Record<string, string>,
   ): Promise<GetAccessTokenDto> {
-    const urlSlug = Origin || origin;
+    const urlSlug = headerFirst(headers, "origin");
 
     const credentials = await this.authService.auth({ ...body, urlSlug });
 

@@ -1,8 +1,10 @@
 import "reflect-metadata";
 import { validate } from "class-validator";
-import { HttpResponse, ValidationError } from "./httpResponse";
+import { mergeHeadersAndMultiValue, parseApiGatewayJsonBody } from "./api-gateway-event";
+import { HttpResponse, ResponseError, ValidationError } from "./httpResponse";
 import { HttpStatus } from "./httpStatus";
 import { plainToInstance } from "class-transformer";
+import { ExceptionsConstants } from "@/commons/consts/exceptions";
 
 const SQS_KEY = "SQS";
 const BODY_KEY = "BODY";
@@ -72,8 +74,10 @@ export function Method() {
     const originalMethod = descriptor.value;
 
     descriptor.value = async function (...args: any[]): Promise<HttpResponse> {
-      const { body, user, token, source, Records, headers, requestContext } = args[0];
-      let { pathParameters, queryStringParameters } = args[0];
+      const event = args[0];
+      const headers = mergeHeadersAndMultiValue(event.headers, event.multiValueHeaders);
+      const { user, token, source, Records, requestContext } = event;
+      let { pathParameters, queryStringParameters } = event;
 
       const { sourceIp, userAgent } = requestContext?.identity || { sourceIp: "", userAgent: "" };
       let isSQSSource = false;
@@ -127,16 +131,26 @@ export function Method() {
 
         let parsedBody: any = null;
 
-        if (bodyParams.length && body) {
-          parsedBody = JSON.parse(body);
-          const DtoClass = bodyDtoClasses[bodyParams[0]];
-          if (DtoClass) {
-            const dtoInstance = plainToInstance(DtoClass, parsedBody);
-            const errors = await validate(dtoInstance);
-            if (errors.length > 0) {
-              throw new ValidationError(errors, HttpStatus.BAD_REQUEST);
+        if (bodyParams.length) {
+          let parsedRaw: unknown = null;
+          try {
+            parsedRaw = parseApiGatewayJsonBody(event);
+          } catch {
+            throw new ResponseError(ExceptionsConstants.INVALID_JSON_BODY, HttpStatus.BAD_REQUEST);
+          }
+
+          if (parsedRaw != null) {
+            const DtoClass = bodyDtoClasses[bodyParams[0]];
+            if (DtoClass) {
+              const dtoInstance = plainToInstance(DtoClass, parsedRaw);
+              const errors = await validate(dtoInstance);
+              if (errors.length > 0) {
+                throw new ValidationError(errors, HttpStatus.BAD_REQUEST);
+              }
+              parsedBody = dtoInstance;
+            } else {
+              parsedBody = parsedRaw;
             }
-            parsedBody = dtoInstance;
           }
         }
 
@@ -189,15 +203,6 @@ export function Method() {
             console.info(
               `[Lib] ${handlerLabel} → HTTP ${status} ${error.message} (correlation=${hash})`,
             );
-            if (
-              process.env.NODE_ENV === "development" &&
-              propertyKey === "auth" &&
-              status === HttpStatus.UNAUTHORIZED
-            ) {
-              console.info(
-                "[Lib] Dev hint (sign-in): verifique MONGODB_URI (BD esperada: qa-pbi), reaplique o seed no mesmo Mongo da API e credenciais dev@example.com / DevPass123!. Opcional: INSIGHTS_DEBUG_SIGN_IN=1 para mais detalhes na API.",
-              );
-            }
           } else {
             console.error(`[Lib] ${handlerLabel} → HTTP ${status}`, error.message);
             console.error(error.stack);
