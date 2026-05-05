@@ -29,6 +29,16 @@ O objetivo é um **único repositório Git** na raiz **`insights-platform`**, co
    ```
    Se o remoto já existir com outro nome, use `git remote set-url origin https://github.com/reluviari/insights-platform.git`.
 
+## Hooks Git (sem Co-authored-by do Cursor)
+
+Na raiz, para usar os hooks versionados em [`.githooks/`](../.githooks/) (remove `Co-authored-by: Cursor <cursoragent@cursor.com>` das mensagens):
+
+```bash
+git config core.hooksPath .githooks
+```
+
+Quem não configurar continua a poder commitar; o IDE pode voltar a acrescentar o trailer — basta apagar manualmente ou ativar o `hooksPath` acima.
+
 ## Boas práticas
 
 - Não commitar `.env` com segredos reais.
