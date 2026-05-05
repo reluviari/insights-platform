@@ -26,14 +26,14 @@ services:
           "CMD",
           "mongosh",
           "--quiet",
-          "mongodb://localhost:27017/qa-pbi",
+          "mongodb://127.0.0.1:27017/admin",
           "--eval",
           "db.adminCommand({ ping: 1 }).ok",
         ]
       interval: 5s
-      timeout: 5s
-      retries: 10
-      start_period: 15s
+      timeout: 10s
+      retries: 18
+      start_period: 40s
     networks:
       - insights
 

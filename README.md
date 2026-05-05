@@ -161,6 +161,14 @@ O front precisa da API em algum host — ver READMEs: [insights.api/README.md](i
 
 Alternativa API: `npm run dev:local` (Fastify `:45000`) — [insights.api/README.md](insights.api/README.md).
 
+### MongoDB ou Compose a falhar?
+
+1. **Ver mensagens:** `docker compose logs mongo` e `docker compose logs mongo-seed` (o seed corre antes da API; se falhar, o serviço `api` não sobe).
+2. **Porta 27017 ocupada** no host (outro Mongo a correr): pare esse serviço **ou** mapeie outra porta no `docker-compose.yml`, por exemplo `27018:27017`. Os serviços `api` / `mongo-seed` na rede Docker continuam a usar `mongo:27017` — não precisas de mudar `MONGODB_URI` no `.env` **dentro** do Compose. Só ajustas a URI se a API correr **fora** do Docker e falar com o Mongo publicado no host (ex.: `mongodb://127.0.0.1:27018/qa-pbi`).
+3. **Docker Compose antigo:** é preciso Compose **v2+** para `depends_on: condition: service_completed_successfully` (instalar/atualizar Docker Desktop ou plugin `compose`).
+4. **Recomeçar do zero** (apaga dados do volume Mongo deste projeto):  
+   `docker compose down -v` → voltar a `docker compose up --build`.
+
 ### Credenciais e dados de teste
 
 | Item | Observação |
