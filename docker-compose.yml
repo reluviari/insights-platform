@@ -52,6 +52,7 @@ services:
       INSIGHTS_ADMIN_CREDENTIALS: ${INSIGHTS_ADMIN_CREDENTIALS:-placeholder_access;placeholder_secret}
       # Evita poluir logs do serverless-offline com aviso de maintenance do aws-sdk v2 (migração v3 é separada).
       AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: ${AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE:-1}
+      INSIGHTS_DEBUG_SIGN_IN: ${INSIGHTS_DEBUG_SIGN_IN:-}
       AZURE_CLIENT_ID: ${AZURE_CLIENT_ID:-}
       AZURE_CLIENT_SECRET_VALUE: ${AZURE_CLIENT_SECRET_VALUE:-}
       AZURE_TENANT_ID: ${AZURE_TENANT_ID:-}

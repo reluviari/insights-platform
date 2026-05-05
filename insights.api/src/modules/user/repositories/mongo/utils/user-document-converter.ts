@@ -7,6 +7,11 @@ import { User } from "@/modules/user/entities";
 import { Types } from "mongoose";
 
 export function toUser(doc: any): User {
+  const tenants = doc.tenants ?? [];
+  const departments = doc.departments ?? [];
+  const reports = doc.reports ?? [];
+  const reportFilters = doc.reportFilters ?? [];
+
   return {
     ...doc,
     _id: doc._id.toString(),
@@ -15,29 +20,31 @@ export function toUser(doc: any): User {
         ? toCustomer(doc.customer)
         : doc?.customer?.toString(),
     tenants:
-      doc.tenants.length > 0
-        ? doc.tenants.map(tenant =>
-            !Types.ObjectId.isValid(tenant) ? toTenant(tenant) : tenant?.toString(),
+      tenants.length > 0
+        ? tenants.map((tenant: unknown) =>
+            !Types.ObjectId.isValid(tenant) ? toTenant(tenant) : (tenant as any)?.toString(),
           )
         : [],
     departments:
-      doc.departments.length > 0
-        ? doc.departments.map(department =>
-            !Types.ObjectId.isValid(department) ? toDepartment(department) : department?.toString(),
+      departments.length > 0
+        ? departments.map((department: unknown) =>
+            !Types.ObjectId.isValid(department)
+              ? toDepartment(department)
+              : (department as any)?.toString(),
           )
         : [],
     reports:
-      doc.reports.length > 0
-        ? doc.reports?.map(report =>
-            !Types.ObjectId.isValid(report) ? toReport(report) : report?.toString(),
+      reports.length > 0
+        ? reports.map((report: unknown) =>
+            !Types.ObjectId.isValid(report) ? toReport(report) : (report as any)?.toString(),
           )
         : [],
     reportFilters:
-      doc.reportFilters.length > 0
-        ? doc.reportFilters?.map(reportFilter =>
+      reportFilters.length > 0
+        ? reportFilters.map((reportFilter: unknown) =>
             !Types.ObjectId.isValid(reportFilter)
               ? toReportFilter(reportFilter)
-              : reportFilter?.toString(),
+              : (reportFilter as any)?.toString(),
           )
         : [],
   };

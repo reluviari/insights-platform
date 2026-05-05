@@ -7,4 +7,6 @@ RUN npm ci
 
 EXPOSE 4001 4002 4003
 
+ENV NODE_ENV=development
+
 CMD ["npm", "run", "dev"]

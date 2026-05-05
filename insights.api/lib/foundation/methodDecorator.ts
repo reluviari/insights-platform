@@ -190,12 +190,12 @@ export function Method() {
               `[Lib] ${handlerLabel} → HTTP ${status} ${error.message} (correlation=${hash})`,
             );
             if (
-              process.env.NODE_ENV !== "production" &&
+              process.env.NODE_ENV === "development" &&
               propertyKey === "auth" &&
               status === HttpStatus.UNAUTHORIZED
             ) {
               console.info(
-                "[Lib] Dev hint (sign-in): credenciais incorretas ou utilizador sem hash de senha no Mongo — reaplique o seed (README: Como rodar).",
+                "[Lib] Dev hint (sign-in): verifique MONGODB_URI (BD esperada: qa-pbi), reaplique o seed no mesmo Mongo da API e credenciais dev@example.com / DevPass123!. Opcional: INSIGHTS_DEBUG_SIGN_IN=1 para mais detalhes na API.",
               );
             }
           } else {

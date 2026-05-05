@@ -21,9 +21,14 @@ export class SignInUseCase {
       throw new ResponseError(ExceptionsConstants.INVALID_URL_SLUG, HttpStatus.BAD_REQUEST);
     }
 
-    const user = await this.userRepository.findUserByEmail(userEmail);
+    const user = await this.userRepository.findAuthCredentialsByEmail(userEmail);
 
     if (!user) {
+      if (process.env.INSIGHTS_DEBUG_SIGN_IN === "1") {
+        console.info(
+          "[Lib] Sign-in debug: nenhum documento em users para esse e-mail (após trim e regex case-insensitive).",
+        );
+      }
       throw new ResponseError(ExceptionsConstants.UNAUTHORIZED, HttpStatus.UNAUTHORIZED);
     }
 
@@ -34,6 +39,13 @@ export class SignInUseCase {
     const validatePassword = hashCompareSync(password, user.password);
 
     if (!validatePassword) {
+      if (process.env.INSIGHTS_DEBUG_SIGN_IN === "1") {
+        console.info(
+          `[Lib] Sign-in debug: bcrypt falhou (storedPassword=${Boolean(
+            user.password,
+          )}). Reaplique o seed ou verifique a senha.`,
+        );
+      }
       throw new ResponseError(ExceptionsConstants.UNAUTHORIZED, HttpStatus.UNAUTHORIZED);
     }
 
