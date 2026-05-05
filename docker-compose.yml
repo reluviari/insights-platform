@@ -64,6 +64,7 @@ services:
     environment:
       NEXT_PUBLIC_INSIGHTS_API: ${NEXT_PUBLIC_INSIGHTS_API:-http://localhost:4001}
       NEXT_PUBLIC_EMBED_PBI_APP_URL: ${NEXT_PUBLIC_EMBED_PBI_APP_URL:-https://app.powerbi.com}
+      NEXT_PUBLIC_PLATAFORM_NAME: ${NEXT_PUBLIC_PLATAFORM_NAME:-Insights}
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-dev-only-change-me}
     volumes:

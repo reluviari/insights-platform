@@ -126,6 +126,12 @@ Edite o `.env` com segredos **Azure** / **Keycloak** quando necessário (sem Azu
 docker compose up --build
 ```
 
+#### O que o Docker cobre (só com o `.env` do exemplo)
+
+Seguindo os passos acima, **deve subir sem erro**: **MongoDB**, **API** (Serverless Offline em `:4001`) e **Next.js** (`:3000`). O **`GET /api/health-check`** deve responder (teste com `curl` na seção abaixo).
+
+**Não está “garantido” pelo README** no sentido de produto completo: **não há seed** de tenants/usuários no repositório — login e telas autenticadas dependem de dados que **você** coloca no MongoDB (e de **Keycloak**, se ativar o profile). **Power BI / embed** continuam a precisar de **credenciais Azure** reais; sem elas a stack sobe, mas fluxos de relatório/token podem falhar (como já descrito em [Pré-requisitos](#pré-requisitos) e [Credenciais e dados de teste](#credenciais-e-dados-de-teste)).
+
 Aguarde subir **MongoDB**, **API** e **Web**. Keycloak opcional: `docker compose --profile keycloak up --build` e `KEYCLOAK_URL=http://keycloak:8080` no `.env`.
 
 | Serviço        | URL |
