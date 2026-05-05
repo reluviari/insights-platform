@@ -46,9 +46,24 @@ export function KeycloakAuthorize() {
 
 const verifyJWTToken = async (jwtToken: string, event: any): Promise<any> => {
   const payload: any = decode(jwtToken);
+  const email = payload?.email ?? payload?.preferred_username;
 
-  const user = await userRepository.findUserByEmail(payload.email, [{ path: "tenant" }]);
-  const tenant = user.tenant as Tenant;
+  if (!email) {
+    throw new ResponseError(ExceptionsConstants.INVALID_TOKEN, HttpStatus.UNAUTHORIZED);
+  }
+
+  const user = await userRepository.findUserByEmail(email, [{ path: "tenants" }]);
+
+  if (!user) {
+    throw new ResponseError(ExceptionsConstants.UNAUTHORIZED, HttpStatus.UNAUTHORIZED);
+  }
+
+  const tenants = user.tenants as Tenant[] | undefined;
+  const tenant = tenants?.find((t) => Boolean(t?.realmId));
+
+  if (!tenant?.realmId) {
+    throw new ResponseError(ExceptionsConstants.UNAUTHORIZED, HttpStatus.UNAUTHORIZED);
+  }
 
   const response = await keycloakApi.get(`/realms/${tenant.realmId}/protocol/openid-connect/certs`);
 
@@ -85,6 +100,8 @@ const verifyJWTToken = async (jwtToken: string, event: any): Promise<any> => {
       );
     });
   }
+
+  throw new ResponseError(ExceptionsConstants.INVALID_TOKEN, HttpStatus.UNAUTHORIZED);
 };
 
 const validate = async (createdTokenAt: number, jwtPayload: DecodedAccessToken) => {

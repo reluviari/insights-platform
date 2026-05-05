@@ -10,7 +10,8 @@
     "dev": "sls offline start --reloadHandler",
     "test": "jest",
     "test-coverage": "jest --coverage",
-    "lint": "npx eslint 'src/**'"
+    "lint": "npx eslint 'src/**'",
+    "seed:mongo:keycloak": "mongosh \"${MONGODB_URI:-mongodb://127.0.0.1:27017/qa-pbi}\" --file ../docker/mongo/seed-insights-keycloak-dev.js"
   },
   "engines": {
     "node": ">=14.15.0"

@@ -132,7 +132,7 @@ Seguindo os passos acima, **deve subir sem erro**: **MongoDB**, **API** (Serverl
 
 **Não está “garantido” pelo README** no sentido de produto completo: **não há seed** de tenants/usuários no repositório — login e telas autenticadas dependem de dados que **você** coloca no MongoDB (e de **Keycloak**, se ativar o profile). **Power BI / embed** continuam a precisar de **credenciais Azure** reais; sem elas a stack sobe, mas fluxos de relatório/token podem falhar (como já descrito em [Pré-requisitos](#pré-requisitos) e [Credenciais e dados de teste](#credenciais-e-dados-de-teste)).
 
-Aguarde subir **MongoDB**, **API** e **Web**. Keycloak opcional: `docker compose --profile keycloak up --build` e `KEYCLOAK_URL=http://keycloak:8080` no `.env`.
+Aguarde subir **MongoDB**, **API** e **Web**. Keycloak opcional: `docker compose --profile keycloak up --build` e `KEYCLOAK_URL=http://keycloak:8080` no `.env` (import automático do realm `insights-dev` — ver [docker/KEYCLOAK.md](docker/KEYCLOAK.md)). **Seed Mongo** alinhado a esse realm: com o Mongo a correr, `docker compose --profile seed run --rm mongo-seed`.
 
 | Serviço        | URL |
 |----------------|-----|
@@ -295,7 +295,11 @@ insights-platform/
 ├── .cursor/
 │   └── rules/
 ├── docker/
-│   └── KEYCLOAK.md
+│   ├── KEYCLOAK.md
+│   ├── keycloak/
+│   │   └── import/          # realm Keycloak (ex.: insights-dev-realm.json)
+│   └── mongo/
+│       └── seed-insights-keycloak-dev.js
 ├── insights.api/
 │   ├── project.json
 │   ├── serverless.yml

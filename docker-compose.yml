@@ -9,6 +9,10 @@
 # Keycloak opcional (admin em http://localhost:8080):
 #   docker compose --profile keycloak up --build
 #   # com o profile ativo, defina no .env: KEYCLOAK_URL=http://keycloak:8080
+#   # na primeira subida, importa docker/keycloak/import/*.json (realm insights-dev).
+#
+# Seed Mongo (tenant + user alinhados ao Keycloak):
+#   docker compose --profile seed run --rm mongo-seed
 #
 # O Compose lê o arquivo ".env" na raiz apenas para interpolar variáveis abaixo.
 
@@ -82,14 +86,30 @@ services:
     container_name: insights-keycloak
     profiles:
       - keycloak
-    command: start-dev --hostname-strict=false --http-port=8080
+    command: start-dev --hostname-strict=false --http-port=8080 --import-realm
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+    volumes:
+      - ./docker/keycloak/import:/opt/keycloak/data/import:ro
     ports:
       - "8080:8080"
     networks:
       - insights
+
+  mongo-seed:
+    image: mongo:6
+    container_name: insights-mongo-seed
+    profiles:
+      - seed
+    volumes:
+      - ./docker/mongo/seed-insights-keycloak-dev.js:/seed.js:ro
+    networks:
+      - insights
+    depends_on:
+      - mongo
+    entrypoint: ["mongosh", "mongodb://mongo:27017/qa-pbi", "/seed.js"]
+    restart: "no"
 
 networks:
   insights:

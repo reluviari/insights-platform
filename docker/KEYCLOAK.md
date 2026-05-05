@@ -1,24 +1,79 @@
-# Keycloak em Docker (`docker compose --profile keycloak up`)
+# Keycloak local + seed (Docker)
 
-URL interna para a API (rede Docker): `http://keycloak:8080`.  
-Console admin (navegador): [http://localhost:8080](http://localhost:8080) (usuário/senha padrão `admin` / `admin`, sobrescreva com `KEYCLOAK_ADMIN` / `KEYCLOAK_ADMIN_PASSWORD` no `.env`).
+## O que o repositório inclui
 
-## Alinhar ao MongoDB (`tenants.realmId`)
+| Artefato | Função |
+|----------|--------|
+| [`keycloak/import/insights-dev-realm.json`](./keycloak/import/insights-dev-realm.json) | Realm **`insights-dev`**, client público **`insights-web`** (Direct Access Grants ativo), utilizador **`dev@example.com`** / **`DevPass123!`**. |
+| [`mongo/seed-insights-keycloak-dev.js`](./mongo/seed-insights-keycloak-dev.js) | **MongoDB**: tenant com `realmId: insights-dev`, `urlSlug: https://localhost:3000`, customer com `clientId: insights-web`, user com o mesmo e-mail do Keycloak. |
 
-O modelo de tenant exige que o campo `realmId` aponte para o **realm** do Keycloak usado naquele tenant (veja [insights.api/src/modules/tenant/repositories/mongo/tenant/tenant.schema.ts](../insights.api/src/modules/tenant/repositories/mongo/tenant/tenant.schema.ts)).
+Importação do realm corre **na primeira subida** do container com `--import-realm` (dados “limpos”). Se precisar reimportar, recrie o container do Keycloak (sem volume persistente, o modo `start-dev` costuma ser efémero; caso use volume, apague os dados do Keycloak antes).
 
-1. No admin do Keycloak, crie um **Realm** (ex.: `meu-cliente`).
-2. No MongoDB, o documento em `tenants` para esse cliente deve ter `realmId` igual ao nome do realm (ex.: `"realmId": "meu-cliente"`).
-3. Crie **Clients** e usuários no realm conforme o fluxo de login esperado pela aplicação (a API usa o endpoint de token do realm: `/realms/{realmId}/protocol/openid-connect/token`).
+## Subir Keycloak com Compose
 
-Sem esse alinhamento, o login via Keycloak retorna erro de realm/client inexistente ou certificado inválido.
-
-## Variável de ambiente
-
-No `.env` na raiz do repositório **insights-platform**, com o profile Keycloak ativo:
+Na raiz do monorepo, no `.env` (a partir do `.env.docker.example`):
 
 ```env
 KEYCLOAK_URL=http://keycloak:8080
 ```
 
-A API resolve essa URL a partir de `config/local.yml` via `process.env` (substituição `${env:KEYCLOAK_URL, ''}`) ao subir o `serverless-offline` dentro do container.
+Suba API + Mongo + Web + Keycloak:
+
+```bash
+docker compose --profile keycloak up --build
+```
+
+- **Admin console:** [http://localhost:8080](http://localhost:8080) — utilizador/senha por defeito `admin` / `admin` (ou `KEYCLOAK_ADMIN` / `KEYCLOAK_ADMIN_PASSWORD`).
+- **URL interna para a API** (rede Docker): `http://keycloak:8080` — é esta que deve estar em `KEYCLOAK_URL` para o serviço `api`.
+
+A API resolve `KEYCLOAK_URL` a partir de `config/local.yml` (`${env:KEYCLOAK_URL}`) quando corre o `serverless-offline` no container.
+
+## Seed Mongo (tenant + user)
+
+Com **Mongo** a correr (por exemplo stack já levantada):
+
+```bash
+docker compose --profile seed run --rm mongo-seed
+```
+
+Ou no host (Mongo em `localhost:27017`, base `qa-pbi`):
+
+```bash
+mongosh "mongodb://127.0.0.1:27017/qa-pbi" --file docker/mongo/seed-insights-keycloak-dev.js
+```
+
+Equivalente na pasta da API:
+
+```bash
+cd insights.api && npm run seed:mongo:keycloak
+```
+
+## Alinhar `tenants.urlSlug` ao front
+
+O repositório de tenants faz o lookup com **Origin** do browser normalizado para HTTPS:
+
+- Origin típico em dev: `http://localhost:3000`
+- Valor guardado no Mongo: **`https://localhost:3000`**
+
+O script de seed já usa esse `urlSlug`. Se alterar a URL do front, atualize o tenant (ou volte a correr o seed com os dados ajustados).
+
+## Testar login Keycloak na API
+
+O front padrão chama `/auth/sign-in` **sem** `type: keycloak` (usa JWT próprio com password em Mongo). Para testar o fluxo Keycloak, envie:
+
+```bash
+curl -sS -X POST http://localhost:4001/api/auth/sign-in \
+  -H "Content-Type: application/json" \
+  -H "Origin: http://localhost:3000" \
+  -d '{"email":"dev@example.com","password":"DevPass123!","type":"keycloak"}'
+```
+
+Resposta esperada: JSON com `accessToken` e `refreshToken` emitidos pelo Keycloak.
+
+As rotas protegidas que usam **`Authorize()`** esperam JWT assinado com `SECRET_TOKEN` (login clássico), não o access token do Keycloak. O decorator **`KeycloakAuthorize`** valida o JWT do Keycloak; hoje pode não estar ligado a handlers — o seed serve sobretudo a **integração do token endpoint** e a validação quando for adoptada.
+
+## Variáveis úteis (Compose)
+
+Definidas na raiz `.env` / [.env.docker.example](../.env.docker.example): `KEYCLOAK_URL`, credenciais admin opcionais `KEYCLOAK_ADMIN`, `KEYCLOAK_ADMIN_PASSWORD`.
+
+Para fluxo de trabalho com IA: [docs/ai-workflow.md](../docs/ai-workflow.md).
