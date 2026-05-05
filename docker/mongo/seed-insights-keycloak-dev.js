@@ -48,8 +48,9 @@ db.customers.replaceOne(
   { upsert: true },
 );
 
+// bcryptjs 8 rounds — plaintext DevPass123! (confirmado com bcrypt.compareSync)
 const devPasswordHash =
-  "$2a$08$lCBH/LLWsnY0I92FDf81deTsw0oJeptVvgbXVzrP0KaWPf.SIdahq";
+  "$2a$08$2.ORM/tcap8QP4wfTCHgXO2NDlPraJip8GR3zk5bdu0NS.biXjDe6";
 
 db.users.updateOne(
   { email: "dev@example.com" },
