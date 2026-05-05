@@ -139,6 +139,10 @@ export function Method() {
             throw new ResponseError(ExceptionsConstants.INVALID_JSON_BODY, HttpStatus.BAD_REQUEST);
           }
 
+          if (bodyDtoClasses[bodyParams[0]] && parsedRaw == null) {
+            throw new ResponseError(ExceptionsConstants.INVALID_JSON_BODY, HttpStatus.BAD_REQUEST);
+          }
+
           if (parsedRaw != null) {
             const DtoClass = bodyDtoClasses[bodyParams[0]];
             if (DtoClass) {

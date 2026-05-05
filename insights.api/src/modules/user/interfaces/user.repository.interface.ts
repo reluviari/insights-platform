@@ -7,7 +7,12 @@ import { UpdateUser } from "./update-user.interface";
 export interface IUserRepository {
   create(data: User): Promise<User>;
   updateMany(data: User[]): Promise<UpdateResult | null>;
-  findUserByEmail(email: string, populates?: PopulateOptions[]): Promise<User | null>;
+  findUserByEmail(
+    email: string,
+    populates?: PopulateOptions[],
+    /** Quando true, inclui o hash armazenado em `password` (schema usa `select: false`). */
+    includePasswordHash?: boolean,
+  ): Promise<User | null>;
   findUserByPasswordToken(
     passwordToken: string,
     populates?: PopulateOptions[],

@@ -13,6 +13,16 @@ export class SignInUseCase {
 
   async execute(body: SignInDto) {
     const { email: userEmail, password, urlSlug } = body;
+
+    if (
+      typeof userEmail !== "string" ||
+      typeof password !== "string" ||
+      !userEmail.trim() ||
+      password.length === 0
+    ) {
+      throw new ResponseError(ExceptionsConstants.UNAUTHORIZED, HttpStatus.UNAUTHORIZED);
+    }
+
     if (!urlSlug || typeof urlSlug !== "string") {
       throw new ResponseError(ExceptionsConstants.ORIGIN_NOT_PROVIDED, HttpStatus.BAD_REQUEST);
     }
@@ -21,9 +31,9 @@ export class SignInUseCase {
       throw new ResponseError(ExceptionsConstants.INVALID_URL_SLUG, HttpStatus.BAD_REQUEST);
     }
 
-    const normalizedEmail = userEmail.trim().toLowerCase();
+    const normalizedEmail = userEmail.normalize("NFKC").trim().toLowerCase();
 
-    const user = await this.userRepository.findUserByEmail(normalizedEmail);
+    const user = await this.userRepository.findUserByEmail(normalizedEmail, undefined, true);
 
     if (!user) {
       throw new ResponseError(ExceptionsConstants.UNAUTHORIZED, HttpStatus.UNAUTHORIZED);

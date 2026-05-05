@@ -12,7 +12,7 @@ const UserSchema = new Schema(
     email: { type: String, required: true, unique: true },
     clientId: { type: String, required: false },
     phone: { type: String, required: false },
-    password: { type: String, required: false },
+    password: { type: String, required: false, select: false },
     avatar: { type: String, required: false },
     isActive: { type: Boolean, default: true },
     roles: {

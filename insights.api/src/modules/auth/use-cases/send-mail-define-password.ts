@@ -14,7 +14,7 @@ export class SendMailDefinePasswordUseCase {
   async execute(body: SendMailDefinePasswordDto) {
     const { email, type } = body;
 
-    const user = await this.userRepository.findUserByEmail(email);
+    const user = await this.userRepository.findUserByEmail(email, undefined, true);
 
     if (user) {
       if (type === TypeMail.DEFINE_PASSWORD && user.password) {

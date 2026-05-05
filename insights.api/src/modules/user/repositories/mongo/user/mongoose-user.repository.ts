@@ -52,10 +52,29 @@ export class MongooseUserRepository implements IUserRepository {
     return userDocs.length ? userDocs.map(userDoc => toUser(userDoc.toObject())) : [];
   }
 
-  async findUserByEmail(email: string, populates?: PopulateOptions[]): Promise<User | null> {
-    const userDoc = await this.handleErrors(
-      UserModel.findOne({ email }).populate(populates).exec(),
-    );
+  async findUserByEmail(
+    email: string,
+    populates?: PopulateOptions[],
+    includePasswordHash?: boolean,
+  ): Promise<User | null> {
+    const normalized =
+      typeof email === "string" ? email.normalize("NFKC").trim().toLowerCase() : "";
+
+    if (!normalized) {
+      return null;
+    }
+
+    let query = UserModel.findOne({ email: normalized });
+
+    if (includePasswordHash) {
+      query = query.select("+password");
+    }
+
+    if (populates?.length) {
+      query = query.populate(populates);
+    }
+
+    const userDoc = await this.handleErrors(query.exec());
 
     return userDoc ? toUser(userDoc.toObject()) : null;
   }
