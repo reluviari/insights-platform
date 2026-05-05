@@ -1,0 +1,6 @@
+vpc:
+  securityGroupIds:
+    - ${ssm:/vpc/security-group/default}
+  subnetIds:
+    - ${ssm:/vpc/subnets/private/a}
+    - ${ssm:/vpc/subnets/private/b}

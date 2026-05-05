@@ -1,0 +1,7 @@
+attach-reports-to-customer:
+  handler: src/modules/customer/controllers/customer-controller.attachReportsToCustomer
+  events:
+    - http:
+        path: /api/customers/{customerId}/reports/{reportId}/attach
+        method: post
+        cors: true

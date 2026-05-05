@@ -1,0 +1,25 @@
+---
+description: Arquitetura full-stack — limites front/back, contratos e separação de responsabilidades (Insights Platform)
+alwaysApply: true
+---
+
+- Tratar **insights.web** e **insights.api** como módulos separados com **contratos explícitos** (REST/JSON); o front não depende de detalhes internos de Lambda ou Mongoose.
+- Preferir contratos de request/response tipados no front alinhados ao que a API expõe.
+- Regras de negócio **não** ficam em componentes de UI de forma exclusiva: orquestração pesada e regras de domínio pertencem à API (use-cases/services).
+- Validação perto das fronteiras:
+  - front: formulários / schemas de UI
+  - back: DTOs e validação nos handlers (class-validator / padrão do projeto)
+- Preferir composição a herança.
+- No front, organizar por **feature** sob `src/pages`, `src/components`, `src/services`, `src/store` conforme padrão existente.
+- No back, organizar por **módulo de domínio** sob `src/modules/<domínio>` com controllers, use-cases, services, repositories.
+- Evitar duplicar validação quando um tipo compartilhado for seguro e já existir no projeto.
+- Toda feature relevante deve considerar:
+  - contrato de entrada e saída
+  - estados de carregamento / erro / vazio no front quando houver UI
+  - regras de autorização quando aplicável (JWT, perfis, tenant)
+- Evitar vazar preocupações de infraestrutura (ARN, VPC, detalhes de bucket) na lógica de domínio.
+- Handlers/controllers **finos**; páginas Next **finas** onde possível.
+- Dependências explícitas em vez de acoplamento oculto.
+- Estrutura de pastas previsível é preferível a abstrações “espertas” demais.
+- **Requisitos de produto e segurança** prevalecem sobre preferências pessoais de biblioteca.
+- Dúvidas de escopo entre produto e implementação: consultar **`docs/PRODUCT_SCOPE.md`** e alinhar com o time.

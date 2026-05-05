@@ -1,0 +1,7 @@
+list:
+  handler: src/modules/target-filter/controllers/target-filter-controller.list
+  events:
+    - http:
+        path: /api/reports/{reportId}/target-filters
+        method: get
+        cors: true

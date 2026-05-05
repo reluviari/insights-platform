@@ -1,0 +1,7 @@
+embedToken:
+  handler: src/modules/embed-token/controllers/embed-token-controller.embedToken
+  events:
+    - http:
+        path: /api/embed-token
+        method: post
+        cors: true

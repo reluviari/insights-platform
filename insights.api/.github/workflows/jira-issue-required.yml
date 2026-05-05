@@ -1,0 +1,15 @@
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    
+jobs:
+  jira_issue_required:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Whether PR/commit is associated to a Jira issue
+        uses: iclinic/automations/jira-issue-required@v1
+        with:
+          jira_base_url: ${{ secrets.B2B_JIRA_BASE_URL }}
+          jira_user_email: ${{ secrets.B2B_JIRA_USER_EMAIL }}
+          jira_api_token: ${{ secrets.B2B_JIRA_API_TOKEN }}
+          possible_issue_reference: ${{ github.event.pull_request.title }}

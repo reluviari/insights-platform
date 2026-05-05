@@ -1,0 +1,28 @@
+{
+  "name": "insights-platform",
+  "version": "0.0.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "nx": "nx",
+    "graph": "nx graph",
+    "affected": "nx affected",
+    "build:api": "nx run insights-api:build",
+    "build:web": "nx run insights-web:build",
+    "dev:api": "nx run insights-api:dev",
+    "dev:web": "nx run insights-web:dev",
+    "test:api": "nx run insights-api:test",
+    "lint:api": "nx run insights-api:lint",
+    "lint:web": "nx run insights-web:lint",
+    "lint": "nx run-many -t lint --all",
+    "test": "nx run-many -t test --all",
+    "many:build": "nx run-many -t build --all"
+  },
+  "devDependencies": {
+    "nx": "20.6.4"
+  },
+  "workspaces": [
+    "insights.api",
+    "insights.web"
+  ]
+}

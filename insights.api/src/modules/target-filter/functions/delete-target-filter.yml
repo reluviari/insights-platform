@@ -1,0 +1,7 @@
+deleteTargetFilter:
+  handler: src/modules/target-filter/controllers/target-filter-controller.deleteTargetFilter
+  events:
+    - http:
+        path: /api/reports/{reportId}/target-filters/{targetFilterId}
+        method: delete
+        cors: true

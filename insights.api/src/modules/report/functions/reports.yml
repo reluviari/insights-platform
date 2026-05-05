@@ -1,0 +1,7 @@
+reports:
+  handler: src/modules/report/controllers/reports-controller.getReportsByTenantSlug
+  events:
+    - http:
+        path: /api/reports
+        method: get
+        cors: true

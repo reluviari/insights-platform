@@ -1,0 +1,7 @@
+user-report:
+  handler: src/modules/report/controllers/reports-controller.userReport
+  events:
+    - http:
+        path: /api/me/user-reports
+        method: get
+        cors: true

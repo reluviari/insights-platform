@@ -1,0 +1,31 @@
+---
+description: Operação local — Docker, Nx, env, saúde, segurança, READMEs (Insights Platform)
+alwaysApply: true
+---
+
+- O projeto deve suportar execução local com **Docker Compose** na raiz (`docker-compose.yml`) e execução por app (`insights.api`, `insights.web`).
+- **Nunca** commitar segredos; usar `.env` local e arquivos `.env*.example` como referência.
+- Manter READMEs **alinhados aos comandos reais** (`npm`, `yarn`, `nx`, `docker compose`).
+- **Nx** na raiz: documentar targets relevantes quando adicionar ou alterar `project.json`.
+
+**Backend operacional**
+
+- Health check HTTP: **`GET /api/health-check`** (serverless-offline / API Gateway em produção).
+- Logs: usar o **logger do projeto**; estruturados quando aplicável; **não** logar tokens, senhas ou PII.
+- Autenticação: **JWT** e, quando configurado, **Keycloak**; variáveis como `KEYCLOAK_URL` explícitas no env.
+- Integrações **Microsoft** (Azure AD, Power BI): credenciais apenas via variáveis de ambiente / cofre; documentar no `.env.docker.example` / README.
+
+**Persistência**
+
+- **MongoDB** como banco principal; URI via `MONGODB_URI` / `config/local.yml` conforme ambiente.
+
+**Segurança**
+
+- Validar input no back e feedback adequado no front.
+- Autorização e isolamento **multi-tenant** respeitados ao expor dados.
+- Não expor detalhes internos de erro ao cliente final.
+
+**Entrega**
+
+- README da raiz deve cobrir: como subir o monorepo, apps isolados, visão de arquitetura, Nx quando usado, e referência a `docs/ai-workflow.md` / agentes.
+- Não tratar bibliotecas opcionais como obrigatórias sem requisito de produto explícito.

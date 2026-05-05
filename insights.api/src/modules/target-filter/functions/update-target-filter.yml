@@ -1,0 +1,7 @@
+update:
+  handler: src/modules/target-filter/controllers/target-filter-controller.update
+  events:
+    - http:
+        path: /api/reports/{reportId}/target-filters/{targetFilterId}
+        method: put
+        cors: true

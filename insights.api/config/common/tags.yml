@@ -1,0 +1,6 @@
+tags:
+  departament: TI
+  project: contracts-b2b
+  service: ${self:service}
+  environment: ${self:custom.stage}
+  SQUAD: FOUNDATION

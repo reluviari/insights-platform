@@ -1,0 +1,7 @@
+synchronize-reports:
+  handler: src/modules/report/controllers/reports-controller.synchronizeReport
+  events:
+    - http:
+        path: /api/reports/synchronize
+        method: post
+        cors: true

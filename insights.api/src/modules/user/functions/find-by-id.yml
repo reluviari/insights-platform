@@ -1,0 +1,7 @@
+find-by-id:
+  handler: src/modules/user/controllers/user-controller.findById
+  events:
+    - http:
+        path: /api/customers/{customerId}/users/{userId}
+        method: get
+        cors: true

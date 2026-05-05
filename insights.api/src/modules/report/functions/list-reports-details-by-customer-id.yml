@@ -1,0 +1,7 @@
+list-reports-details-by-customer-id:
+  handler: src/modules/report/controllers/reports-controller.listReportDetailsByCustomerId
+  events:
+    - http:
+        path: /api/customers/{customerId}/reports
+        method: get
+        cors: true

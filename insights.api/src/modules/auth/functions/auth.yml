@@ -1,0 +1,7 @@
+auth:
+  handler: src/modules/auth/controllers/auth-controller.auth
+  events:
+    - http:
+        path: /api/auth/sign-in
+        method: post
+        cors: true

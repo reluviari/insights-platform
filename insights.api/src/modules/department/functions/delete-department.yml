@@ -1,0 +1,7 @@
+delete-department:
+  handler: src/modules/department/controllers/department-controller.destroy
+  events:
+    - http:
+        path: /api/customers/{customerId}/departments/{departmentId}
+        method: delete
+        cors: true

@@ -1,0 +1,7 @@
+update-customer:
+  handler: src/modules/customer/controllers/customer-controller.update
+  events:
+    - http:
+        path: /api/customers/{customerId}
+        method: put
+        cors: true

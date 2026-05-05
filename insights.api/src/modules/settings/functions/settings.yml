@@ -1,0 +1,7 @@
+settings:
+  handler: src/modules/settings/controllers/settings-controller.getSettingsByUser
+  events:
+    - http:
+        path: /api/settings
+        method: get
+        cors: true

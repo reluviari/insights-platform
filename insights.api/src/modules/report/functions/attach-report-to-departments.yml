@@ -1,0 +1,7 @@
+attach-report-to-departments:
+  handler: src/modules/report/controllers/reports-controller.attachReportToDepartments
+  events:
+    - http:
+        path: /api/customers/{customerId}/reports/{reportId}/attach-to-departments
+        method: post
+        cors: true

@@ -1,0 +1,7 @@
+create-filter:
+  handler: src/modules/report-filter/controllers/report-filter-controller.deleteFilter
+  events:
+    - http:
+        path: /api/customers/{customerId}/reports/{reportId}/filters/{reportFilterId}
+        method: delete
+        cors: true

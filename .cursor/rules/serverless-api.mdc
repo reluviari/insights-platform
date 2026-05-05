@@ -1,0 +1,51 @@
+---
+description: API serverless — Lambda, Middy, TypeScript, MongoDB, módulos insights.api
+globs:
+  - 'insights.api/**/*.ts'
+alwaysApply: false
+---
+
+- Usar **inglês** para código, nomes exportados e comentários técnicos relevantes.
+- Tipar parâmetros e retornos de funções **exportadas** e métodos públicos; evitar `any`.
+- Palavras completas em vez de abreviações obscuras (exceto ID, API, URL, DTO, JWT, HTTP, AWS, PBI, etc.).
+- **PascalCase** para classes; **camelCase** para variáveis, métodos e funções; **kebab-case** para arquivos quando for convenção do módulo; **UPPER_SNAKE** para constantes de ambiente em referência.
+- Evitar números mágicos; usar constantes nomeadas quando ajudar legibilidade.
+
+**Funções**
+
+- Funções curtas e com objetivo único; nomes iniciando com verbo.
+- `isX` / `hasX` / `canX` para booleanos; preferir early return; evitar aninhamento profundo.
+- Um nível principal de abstração por função quando possível.
+
+**Arquitetura (insights.api)**
+
+- Handlers Lambda com **Middy** (e padrões do projeto) focados em **transporte**.
+- Lógica de negócio em **use-cases** / **services**; persistência em **repositories** / Mongoose.
+- **DTOs** focados em validação e forma do payload HTTP.
+- Novas rotas: alinhar `serverless.yml` e `src/modules/**/functions/*.yml`.
+- Não colocar regra de negócio pesada diretamente no controller sem justificativa.
+- Integrações **Azure AD** e **Power BI REST**: seguir integrações existentes em `embed-token` / `report`; não expor segredos em logs ou respostas.
+
+**Validação e limites**
+
+- Validar entrada nos limites dos handlers (DTO / class-validator conforme padrão do módulo).
+- Sanitizar ou rejeitar input externo quando necessário.
+
+**Persistência**
+
+- **MongoDB** + **Mongoose**; schemas e conversores explícitos onde o projeto já usa.
+- Não misturar detalhes de documento Mongo em respostas públicas sem filtro.
+
+**Erros**
+
+- Lançar erros de domínio/HTTP mapeados ao padrão do projeto (`ResponseError`, etc.).
+- Tratar exceções só para corrigir problema esperado, acrescentar contexto ou mapear falha de infraestrutura.
+- Não vazar stack trace ou detalhes internos ao cliente.
+
+**Documentação**
+
+- JSDoc opcional para APIs públicas internas quando agregar valor; não inflar com ruído.
+
+**Deploy**
+
+- Não renomear o **service** do Serverless nem recursos AWS compartilhados sem alinhamento explícito (impacto de deploy).

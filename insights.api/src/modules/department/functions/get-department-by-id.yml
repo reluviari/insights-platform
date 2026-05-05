@@ -1,0 +1,7 @@
+get-department-by-id:
+  handler: src/modules/department/controllers/department-controller.getDepartmentdetails
+  events:
+    - http:
+        path: /api/customers/{customerId}/departments/{departmentId}
+        method: get
+        cors: true

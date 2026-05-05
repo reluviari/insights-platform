@@ -1,0 +1,7 @@
+healthCheck:
+  handler: src/modules/health-check/controllers/health-check-controller.healthCheck
+  events:
+    - http:
+        path: /api/health-check
+        method: get
+        cors: true

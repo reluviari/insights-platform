@@ -1,0 +1,7 @@
+create-customer:
+  handler: src/modules/customer/controllers/customer-controller.create
+  events:
+    - http:
+        path: /api/customers
+        method: post
+        cors: true

@@ -1,0 +1,7 @@
+get-customer-by-tenant-url-slug:
+  handler: src/modules/customer/controllers/customer-controller.getCustomerByTenantUrlSlug
+  events:
+    - http:
+        path: /api/customers
+        method: get
+        cors: true

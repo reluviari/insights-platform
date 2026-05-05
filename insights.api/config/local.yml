@@ -1,0 +1,45 @@
+config:
+  packageIndividually: false
+  profile: ""
+  domain:
+    url: "api.afya-local.com.br"
+    certificate: "*.afya-local.com.br"
+
+custom:
+  verifyPriceHistoryEnabled: false
+  verifyStatusChangeQueueEnabled: false
+  sendEmailProtheusEnabled: false
+
+environment:
+  AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1"
+  NODE_OPTIONS: "--enable-source-maps --stack-trace-limit=1000"
+
+  MONGODB_URI: ${env:MONGODB_URI, 'mongodb://127.0.0.1/qa-pbi'}
+
+  SECRET_TOKEN_EXPIRE: "24h"
+  SECRET_TOKEN: "SECRET_SEGURO"
+  DEFINE_PASSWORD_TOKEN_EXPIRE: "2h"
+
+  SITE_URL: ${env:SITE_URL, 'http://localhost:3000'}
+  KEYCLOAK_URL: ${env:KEYCLOAK_URL, ''}
+
+  EMBED_PBI_API_URL: ${env:EMBED_PBI_API_URL, 'https://api.powerbi.com'}
+
+  AZURE_API: ${env:AZURE_API, 'https://login.microsoftonline.com'}
+  AZURE_CLIENT_ID: ${env:AZURE_CLIENT_ID, ''}
+  AZURE_CLIENT_SECRET_VALUE: ${env:AZURE_CLIENT_SECRET_VALUE, ''}
+  AZURE_TENANT_ID: ${env:AZURE_TENANT_ID, ''}
+  AZURE_RESOURCE: ${env:AZURE_RESOURCE, 'https://analysis.windows.net/powerbi/api'}
+  AZURE_USERNAME: ${env:AZURE_USERNAME, 'medcel.bi.ti@afya.com.br'}
+  AZURE_PASSWORD: ${env:AZURE_PASSWORD, ''}
+  AFYA_ADMIN_CREDENTIALS: ${env:AFYA_ADMIN_CREDENTIALS, ''}
+  AWS_SOURCE_EMAIL: ${env:AWS_SOURCE_EMAIL, 'naoresponda@afya.com.br'}
+
+vpc:
+  securityGroupIds: "*"
+  subnetIds: "*"
+
+deploymentBucket:
+  name: qa.serverless.deploy.resources
+  blockPublicAccess: true
+  serverSideEncryption: AES256

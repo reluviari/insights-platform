@@ -1,0 +1,20 @@
+---
+description: Monorepo Nx — apps insights.api e insights.web, limites e CI
+alwaysApply: true
+---
+
+- Este repositório é um **monorepo** com **Nx** na raiz e **npm workspaces** (`insights.api`, `insights.web`).
+- Manter **insights.api** e **insights.web** como **aplicações independentes**; cada uma com seu `package.json`, `project.json` (Nx) e scripts.
+- Ambos devem continuar **executáveis isoladamente** (API com Mongo; Web apontando para a URL da API).
+- Bibliotecas compartilhadas em `libs/` **só** se houver reuso estável e real; não mover código para `libs/` por antecipação.
+- Evitar dependências circulares entre apps ou futuras libs.
+- Dono da feature explícito: mudanças de contrato de API coordenadas com o front.
+- Estrutura atual (não é obrigatório mudar para `apps/`):
+  - `insights.api/` — Serverless, `src/modules`, `serverless.yml`
+  - `insights.web/` — Next.js, `src/pages`, `src/components`, etc.
+
+**Nx**
+
+- Targets em `insights.api/project.json` e `insights.web/project.json` devem refletir os scripts reais (`npm` na API, `yarn` no Web quando for o caso).
+- Preferir **pipelines CI separados** por app (filtros de path) ou **`nx affected`** quando o branch base estiver configurado.
+- Não introduzir Nx plugins pesados sem necessidade clara do time.

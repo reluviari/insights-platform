@@ -1,0 +1,25 @@
+# package directories
+node_modules
+jspm_packages
+
+# Serverless directories
+.serverless
+
+# esbuild directories
+.esbuild
+
+# environments
+.env
+
+# logs
+error.log
+combined.log
+dist
+.idea/*
+
+lib/lib/*
+lib/src/*
+lib/jest.config.js
+lib/jest.config.js.map
+lib/server.js
+lib/server.js.map

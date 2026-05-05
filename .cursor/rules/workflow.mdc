@@ -1,0 +1,23 @@
+---
+description: Fluxo de execução — planejamento, mudanças mínimas e implementação previsível
+alwaysApply: true
+---
+
+- Inspecionar o código existente antes de propor mudanças estruturais.
+- Ler **docs/PRODUCT_SCOPE.md** quando a mudança envolver comportamento de produto, multi-tenant, Power BI ou novos domínios.
+- Ler o **README da raiz** e documentação em `docs/` relevante antes de planejar.
+- Seguir convenções atuais do repositório salvo pedido explícito em contrário.
+- Preferir mudanças **pequenas e reversíveis**; não reescrever código funcionando sem motivo claro.
+- Antes de implementar mudanças grandes, oferecer:
+  1. diagnóstico curto
+  2. plano enxuto
+  3. lista provável de arquivos afetados
+- Dividir o trabalho em passos pequenos.
+- Preferir editar arquivos existentes a criar camadas novas cedo demais.
+- Diante de trade-offs, recomendar **uma** opção e citar alternativa mais simples se existir.
+- Se a pergunta puder ser respondida **sem código**, responder sem código primeiro.
+- Declarar incerteza em vez de inventar detalhes do produto (endpoints não vistos, config de tenant, etc.).
+- Preferir legibilidade a “esperteza” desnecessária.
+- Handlers de UI: prefixo **`handle`** (`handleSubmit`, `handleClick`, …) quando criar novos callbacks.
+- Após mudanças relevantes, sugerir **como validar** (comando nx, curl no health-check, fluxo no browser).
+- **Requisitos de produto e segurança** têm prioridade sobre preferências de biblioteca.

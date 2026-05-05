@@ -1,0 +1,7 @@
+list-report-pages:
+  handler: src/modules/report/controllers/reports-controller.listReportPages
+  events:
+    - http:
+        path: /api/reports/{reportId}/pages
+        method: get
+        cors: true

@@ -1,0 +1,20 @@
+# MongoDB isolado (desenvolvimento na máquina host).
+# Preferível para stack completa: use o docker-compose.yml na raiz do repositório (pasta insights-platform).
+version: "3.8"
+services:
+  mongo:
+    image: mongo:6
+    container_name: mongo-dev-container
+    volumes:
+      - ~/mongo-volume:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - insights-local
+
+networks:
+  insights-local:
+    driver: bridge
+
+# Da máquina host: MONGODB_URI=mongodb://127.0.0.1:27017/qa-pbi
+# De outro container na rede insights-local: MONGODB_URI=mongodb://mongo:27017/qa-pbi

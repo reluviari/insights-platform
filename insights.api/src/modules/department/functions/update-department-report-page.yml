@@ -1,0 +1,7 @@
+update-department-report-page:
+  handler: src/modules/department/controllers/department-controller.updateReportPage
+  events:
+    - http:
+        path: /api/customers/{customerId}/departments/{departmentId}/reportId/{reportId}/pages
+        method: put
+        cors: true

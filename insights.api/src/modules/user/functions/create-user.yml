@@ -1,0 +1,7 @@
+create-user:
+  handler: src/modules/user/controllers/user-controller.create
+  events:
+    - http:
+        path: /api/customers/{customerId}/users
+        method: post
+        cors: true

@@ -1,0 +1,15 @@
+export enum AdvancedFilterConditionOperatorsEnum {
+  None = "None",
+  LessThan = "LessThan",
+  LessThanOrEqual = "LessThanOrEqual",
+  GreaterThan = "GreaterThan",
+  GreaterThanOrEqual = "GreaterThanOrEqual",
+  Contains = "Contains",
+  DoesNotContain = "DoesNotContain",
+  StartsWith = "StartsWith",
+  DoesNotStartWith = "DoesNotStartWith",
+  Is = "Is",
+  IsNot = "IsNot",
+  IsBlank = "IsBlank",
+  IsNotBlank = "IsNotBlank",
+}

@@ -1,0 +1,7 @@
+update-report:
+  handler: src/modules/report/controllers/reports-controller.update
+  events:
+    - http:
+        path: /api/reports/{reportId}
+        method: put
+        cors: true

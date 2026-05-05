@@ -1,0 +1,5 @@
+iamRoleStatements: ${file(${self:projectDir, ''}config/common/iam-role-statements.yml):iamRoleStatements}
+resources: ${file(${self:projectDir, ''}config/common/resources.yml):resources}
+tags: ${file(${self:projectDir, ''}config/common/tags.yml):tags}
+environment: ${file(${self:projectDir, ''}config/${self:custom.commonPath.${self:custom.stage}, 'common/environment'}.yml):environment}
+vpc: ${file(${self:projectDir, ''}config/${self:custom.commonPath.${self:custom.stage}, 'common/vpc'}.yml):vpc}

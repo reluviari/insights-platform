@@ -1,0 +1,7 @@
+get-report-details-by-id:
+  handler: src/modules/report/controllers/reports-controller.getReportDetailsById
+  events:
+    - http:
+        path: /api/reports/{reportId}
+        method: get
+        cors: true

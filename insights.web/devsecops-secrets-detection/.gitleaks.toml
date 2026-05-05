@@ -1,0 +1,30 @@
+title = "Gitleaks Config File"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "global allow lists"
+paths = [
+    '''.gitleaks.toml''',
+    '''(.*?)(jpg|gif|doc|docx|zip|xls|pdf|bin|svg|socket|vsidx|v2|suo|wsuo|.dll|pdb|exe)$''',
+    '''(go.mod|go.sum)$''',
+    '''gradle.lockfile''',
+    '''yarn.lock''',
+    '''package-lock.json''',
+    '''package.json''',
+    '''pnpm-lock.yaml''',
+    '''Database.refactorlog''',
+    '''vendor''',
+    '''.*.test.*''',
+    '''.*.swagger.*''',
+    '''.*.error.*''',
+    '''docs''',
+    '''errors''',
+    '''messages''',
+    '''gitleaks_findings.json''',
+    '''pre-commit''',
+    '''README.md''',
+    '''dist''',
+    '''node_modules'''
+]

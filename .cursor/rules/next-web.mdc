@@ -1,0 +1,48 @@
+---
+description: Front-end Next.js — React, TypeScript, Redux, páginas e componentes insights.web
+globs:
+  - 'insights.web/**/*.ts'
+  - 'insights.web/**/*.tsx'
+alwaysApply: false
+---
+
+- **React 18+** com hooks e componentes funcionais.
+- **TypeScript** com tipagem consistente; evitar `any`.
+- **Inglês** para identificadores e documentação técnica em código.
+- Convenção de arquivos alinhada ao projeto existente (`src/pages`, `src/components`, etc.).
+- Preferir **named exports** para componentes e utilitários; default export só quando já for padrão da página Next.
+- Ordem de imports sugerida: React → terceiros → alias internos → relativos.
+- Indentação **2 espaços**; `const` para valores imutáveis; optional chaining / nullish coalescing quando clarificam.
+
+**Composição e estado**
+
+- Preferir composição a herança.
+- **Redux Toolkit / RTK Query** já são o padrão: estender `src/store` e `src/services` de forma consistente.
+- **Context** apenas quando justificado.
+- Formulários: **react-hook-form** + **Yup** onde o projeto já usa esse padrão.
+- Estado de rota: Next/router conforme `src/pages`.
+
+**Power BI**
+
+- Embed via **powerbi-client-react**; tokens e IDs de workspace/report vêm da **API** — não inventar fluxo de autenticação Microsoft no browser além do documentado.
+- `NEXT_PUBLIC_*` apenas para o que deve ser público no build.
+
+**Acessibilidade**
+
+- HTML semântico; teclado; ARIA quando o semântico não bastar; mirar boas práticas **WCAG 2.1** quando possível.
+
+**UI/UX**
+
+- Interfaces simples e consistentes com Tailwind / SASS existentes.
+- Estados de loading / erro / vazio explícitos em fluxos de dados.
+
+**Segurança**
+
+- Validar input do usuário onde há formulários.
+- Não expor dados sensíveis no cliente; JWT e sessão conforme NextAuth / padrão do projeto.
+
+**Arquitetura**
+
+- Não criar abstrações antes do **segundo uso real**.
+- Extrair componentes compartilhados só quando houver reuso claro.
+- Se o escopo não exigir nova biblioteca, preferir a solução mínima já alinhada ao projeto.

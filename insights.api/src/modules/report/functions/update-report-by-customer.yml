@@ -1,0 +1,7 @@
+update-report-by-customer:
+  handler: src/modules/report/controllers/reports-controller.updateByCustomer
+  events:
+    - http:
+        path: /api/customers/{customerId}/departments/{departmentId}/reports/{reportId}
+        method: put
+        cors: true

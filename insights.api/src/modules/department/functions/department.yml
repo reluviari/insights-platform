@@ -1,0 +1,7 @@
+departments:
+  handler: src/modules/department/controllers/department-controller.listByCustomerId
+  events:
+    - http:
+        path: /api/customers/{customerId}/departments
+        method: get
+        cors: true

@@ -1,0 +1,20 @@
+---
+description: Testes, lint e qualidade — Jest (API), Next lint (Web), Nx
+globs:
+  - '**/*.ts'
+  - '**/*.tsx'
+alwaysApply: false
+---
+
+- Escrever testes para **comportamento público novo** quando fizer sentido para o escopo (API: Jest em `insights.api`).
+- **insights.web**: `yarn lint` / `next lint`; testes automatizados adicionais apenas se o time padronizar (Vitest/Jest/Playwright).
+- Preferir **testes unitários** para lógica pura e serviços; **integração** para fluxos de módulo na API quando viável.
+- **Arrange — Act — Assert** em unitários; nomes claros (`inputX`, `mockX`, `actualX`, `expectedX`).
+- Mockar dependências instáveis ou caras; não mockar código trivial sem necessidade de isolamento.
+- Cobrir estados relevantes: sucesso, erro, vazio, e caminhos com **auth** quando críticos.
+- Manter **ESLint** / Prettier (quando houver) alinhados à config existente; corrigir problemas introduzidos pela mudança.
+- Commits com mensagens semânticas quando o time adotar: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`.
+
+**CI**
+
+- Workflows em `.github/workflows/` podem usar **filtros por path** ou **`nx affected`**; manter pipelines de API e Web independentes quando reduzir ruído.

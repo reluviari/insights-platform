@@ -1,0 +1,7 @@
+update-user:
+  handler: src/modules/user/controllers/user-controller.update
+  events:
+    - http:
+        path: /api/users/{userId}
+        method: put
+        cors: true

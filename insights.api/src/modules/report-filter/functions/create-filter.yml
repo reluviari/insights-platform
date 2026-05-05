@@ -1,0 +1,7 @@
+create-filter:
+  handler: src/modules/report-filter/controllers/report-filter-controller.create
+  events:
+    - http:
+        path: /api/customers/{customerId}/reports/{reportId}/filters
+        method: post
+        cors: true

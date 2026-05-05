@@ -1,0 +1,7 @@
+validate-token:
+  handler: src/modules/auth/controllers/auth-controller.tokenValidate
+  events:
+    - http:
+        path: /api/auth/validate-token
+        method: post
+        cors: true

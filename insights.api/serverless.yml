@@ -1,0 +1,103 @@
+service: afya-b2b-insight
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  versionFunctions: false
+  apiGateway:
+    minimumCompressionSize: 1024
+    shouldStartNameWithService: true
+  region: ${opt:region, 'us-east-1'}
+  profile: ${file(config/${self:custom.stage}.yml):config.profile}
+  memorySize: 256
+  timeout: 30
+  stackTags: ${file(config/common.yml):tags}
+  tags: ${file(config/common.yml):tags}
+  stage: local
+  environment: ${file(config/${self:custom.stage}.yml):environment}
+  deploymentBucket: ${file(config/${self:custom.stage}.yml):deploymentBucket}
+  lambdaHashingVersion: 20201221
+  iam:
+    role:
+      statements: ${file(config/common.yml):iamRoleStatements.default}
+  vpc: ${file(config/${self:custom.stage}.yml):vpc}
+
+package:
+  excludeDevDependencies: true
+  include:
+    - src/documentation/**
+
+plugins:
+  - serverless-esbuild
+  - serverless-offline
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  domain: ${file(config/prod.yml):config.domain}
+  commonPath:
+    local: local
+  environmentFile: ${self:custom.stage}.yml
+
+  serverless-offline:
+    noPrependStageInUrl: true
+    httpPort: 4001
+    websocketPort: 4002
+    lambdaPort: 4003
+    host: 0.0.0.0
+
+  esbuild:
+    bundle: true
+    minify: false
+    sourcemap: true
+    exclude: ["aws-sdk"]
+    keepOutputDirectory: true
+    target: "node16"
+    external: ["reflect-metadata", "src/documentation"]
+    define:
+      "require.resolve": undefined
+    platform: "node"
+    concurrency: 10
+    watch:
+      pattern: ["src/**/*.ts"]
+      ignore: [".esbuild"]
+
+resources: ${file(config/common.yml):resources}
+
+functions:
+  - ${file(src/modules/auth/functions/auth.yml)}
+  - ${file(src/modules/auth/functions/send-define-password.yml)}
+  - ${file(src/modules/auth/functions/define-password.yml)}
+  - ${file(src/modules/auth/functions/validate-token.yml)}
+  - ${file(src/modules/embed-token/functions/embed-token.yml)}
+  - ${file(src/modules/report/functions/reports.yml)}
+  - ${file(src/modules/report/functions/list-reports-details-by-customer-id.yml)}
+  - ${file(src/modules/report/functions/get-report-details-by-id.yml)}
+  - ${file(src/modules/report/functions/list-report-pages.yml)}
+  - ${file(src/modules/report/functions/user-report.yml)}
+  - ${file(src/modules/report/functions/update-report.yml)}
+  - ${file(src/modules/report/functions/synchronize-reports.yml)}
+  - ${file(src/modules/report/functions/attach-report-to-departments.yml)}
+  - ${file(src/modules/customer/functions/get-customer-by-id.yml)}
+  - ${file(src/modules/customer/functions/get-customer-by-tenant-url-slug.yml)}
+  - ${file(src/modules/customer/functions/create-customer.yml)}
+  - ${file(src/modules/customer/functions/attach-reports-to-customer.yml)}
+  - ${file(src/modules/customer/functions/update-customer.yml)}
+  - ${file(src/modules/report-filter/functions/create-filter.yml)}
+  - ${file(src/modules/health-check/functions/health-check.yml)}
+  - ${file(src/modules/settings/functions/settings.yml)}
+  - ${file(src/modules/department/functions/get-department-by-id.yml)}
+  - ${file(src/modules/department/functions/create-department.yml)}
+  - ${file(src/modules/department/functions/department.yml)}
+  - ${file(src/modules/department/functions/delete-department.yml)}
+  - ${file(src/modules/department/functions/update-department-report-page.yml)}
+  - ${file(src/modules/user/functions/create-user.yml)}
+  - ${file(src/modules/user/functions/update-user.yml)}
+  - ${file(src/modules/user/functions/list-users-by-tenant-url-slug.yml)}
+  - ${file(src/modules/user/functions/find-by-id.yml)}
+  - ${file(src/modules/target-filter/functions/list-target-filter.yml)}
+  - ${file(src/modules/target-filter/functions/create-target-filter.yml)}
+  - ${file(src/modules/target-filter/functions/update-target-filter.yml)}
+  - ${file(src/modules/target-filter/functions/delete-target-filter.yml)}
+
+  # - ${file(src/documentation/config/documentation-function.yml)}

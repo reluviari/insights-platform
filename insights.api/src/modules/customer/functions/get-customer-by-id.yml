@@ -1,0 +1,7 @@
+get-customer-by-id:
+  handler: src/modules/customer/controllers/customer-controller.findById
+  events:
+    - http:
+        path: /api/customers/{customerId}
+        method: get
+        cors: true

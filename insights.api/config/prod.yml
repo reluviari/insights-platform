@@ -1,0 +1,42 @@
+config:
+  packageIndividually: false
+  profile: ${self:custom.stage}
+  domain:
+    url: "api-insights.afya.com.br"
+    certificate: "*.afya.com.br"
+
+custom:
+  verifyPriceHistoryEnabled: true
+  verifyStatusChangeQueueEnabled: true
+  sendEmailProtheusEnabled: true
+
+environment:
+  AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1"
+  NODE_ENV: "production"
+  NODE_OPTIONS: "--enable-source-maps --stack-trace-limit=1000"
+  MONGODB_URI: ${ssm:/MONGO_DATABASE_AFYA_INSIGHTS}
+  SECRET_TOKEN_EXPIRE: "24h"
+  SECRET_TOKEN: ${ssm:/JWT_AUTH_KEY_AFYA_INSIGHTS}
+  DEFINE_PASSWORD_TOKEN_EXPIRE: "2h"
+  AZURE_API: ${ssm:/AFYA_INSIGHTS_AZURE_API}
+  AZURE_CLIENT_ID: ${ssm:/AFYA_INSIGHTS_AZURE_CLIENT_ID}
+  AZURE_CLIENT_SECRET_VALUE: ${ssm:/AFYA_INSIGHTS_AZURE_CLIENT_SECRET_VALUE}
+  AZURE_TENANT_ID: ${ssm:/AFYA_INSIGHTS_AZURE_TENANT_ID}
+  AZURE_RESOURCE: ${ssm:/AFYA_INSIGHTS_AZURE_RESOURCE}
+  AZURE_USERNAME: ${ssm:/AFYA_INSIGHTS_AZURE_USERNAME}
+  AZURE_PASSWORD: ${ssm:/AFYA_INSIGHTS_AZURE_PASSWORD}
+  SITE_URL: "https://insights.afya.com.br"
+  EMBED_PBI_API_URL: ${ssm:/AFYA_INSIGHTS_EMBED_PBI_API_URL}
+  AFYA_ADMIN_CREDENTIALS: ${ssm:/AFYA_ADMIN_CREDENTIALS}
+  AWS_SOURCE_EMAIL: "naoresponda@afya.com.br"
+
+deploymentBucket:
+  name: serverless-deploy-insights-prd
+  blockPublicAccess: true
+  serverSideEncryption: AES256
+
+vpc:
+  securityGroupIds:
+    - sg-087631880c57450dd
+  subnetIds:
+    - subnet-07718420f674f2d75

@@ -1,0 +1,7 @@
+users:
+  handler: src/modules/user/controllers/user-controller.listUsersByTenantSlug
+  events:
+    - http:
+        path: /api/users
+        method: get
+        cors: true

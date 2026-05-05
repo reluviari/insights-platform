@@ -1,0 +1,10 @@
+FROM node:20-bullseye-slim
+
+WORKDIR /app
+
+COPY package.json yarn.lock ./
+RUN yarn install --network-timeout 600000
+
+EXPOSE 3000
+
+CMD ["yarn", "dev", "--", "-H", "0.0.0.0", "-p", "3000"]

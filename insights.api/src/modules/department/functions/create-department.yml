@@ -1,0 +1,7 @@
+create-department:
+  handler: src/modules/department/controllers/department-controller.create
+  events:
+    - http:
+        path: /api/customers/{customerId}/departments
+        method: post
+        cors: true

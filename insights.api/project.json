@@ -1,0 +1,44 @@
+{
+  "name": "insights-api",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "src",
+  "targets": {
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm run dev",
+        "cwd": "{projectRoot}"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm run build",
+        "cwd": "{projectRoot}"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm test",
+        "cwd": "{projectRoot}"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm run lint",
+        "cwd": "{projectRoot}"
+      }
+    },
+    "package-serverless": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx serverless package",
+        "cwd": "{projectRoot}"
+      }
+    }
+  },
+  "tags": ["scope:api", "type:serverless"]
+}

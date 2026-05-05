@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ],
+      "@foundation/lib": [
+        "lib/foundation/index.ts"
+      ],
+    }
+  },
+}
