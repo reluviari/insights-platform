@@ -8,8 +8,7 @@
  * ou, no host (Mongo local):
  *   mongosh "mongodb://127.0.0.1:27017/qa-pbi" --file docker/mongo/seed-insights-keycloak-dev.js
  *
- * IMPORTANTE: `urlSlug` do tenant tem de ser https://localhost:3000 — a API normaliza o Origin
- * http://localhost:3000 para esse valor em findBySlug.
+ * O campo password do utilizador é bcrypt (senha em claro documentada no README da raiz).
  */
 
 const tenantId = ObjectId("507f191e810c19729de860e1");
@@ -21,7 +20,7 @@ db.tenants.replaceOne(
   { urlSlug: "https://localhost:3000" },
   {
     _id: tenantId,
-    name: "Tenant dev (Keycloak seed)",
+    name: "Tenant dev (seed)",
     realmId: "insights-dev",
     urlSlug: "https://localhost:3000",
     document: "00000000000199",
@@ -59,6 +58,7 @@ db.users.replaceOne(
     roles: ["USER"],
     customer: customerId,
     tenants: [tenantId],
+    password: "$2a$08$lCBH/LLWsnY0I92FDf81deTsw0oJeptVvgbXVzrP0KaWPf.SIdahq",
     createdAt: now,
     updatedAt: now,
   },
@@ -66,5 +66,5 @@ db.users.replaceOne(
 );
 
 print(
-  "insights-platform seed: tenants/customers/users OK (dados de desenvolvimento; utilizador dev@example.com).",
+  "insights-platform seed: tenants/customers/users OK (dev@example.com — senha de desenvolvimento no README da raiz).",
 );

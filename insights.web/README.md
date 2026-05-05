@@ -76,6 +76,10 @@ graph LR
 
 4. Abra [http://localhost:3000](http://localhost:3000) no navegador.
 
+### Login em desenvolvimento (utilizador do seed Mongo)
+
+Com a API e o Mongo a correr e o **seed** aplicado (primeira subida do volume ou comando em [README da raiz](../README.md#como-rodar)), aceda a **[/login](http://localhost:3000/login)** e use **dev@example.com** / **DevPass123!**. Explicação do cabeçalho **`Origin`**, distinção login clássico vs Keycloak e exemplo `curl`: [Credenciais padrão e como fazer login](../README.md#credenciais-padrão-e-como-fazer-login-desenvolvimento-local).
+
 ### Usar com Docker (monorepo)
 
 Na pasta **pai** (`insights-platform`), use `docker compose`; `NEXT_PUBLIC_*` vêm do `.env` da raiz — [.env.docker.example](../.env.docker.example). O seed de Mongo integra-se na **primeira** inicialização do volume (sem contentor dedicado). **Keycloak não faz parte do uso atual** — [README da raiz](../README.md#como-rodar).
