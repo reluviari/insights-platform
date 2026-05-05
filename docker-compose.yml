@@ -1,4 +1,4 @@
-# Insights Platform — stack local: MongoDB → mongo-seed (job idempotente) → API + Next.js.
+# Insights Platform — stack local: MongoDB (seed na 1.ª inicialização do volume) + API + Next.js.
 # Power BI / Azure AD na nuvem — configure credenciais no .env para embed real (veja .env.docker.example).
 #
 # Uso na raiz:
@@ -20,6 +20,8 @@ services:
       - "27017:27017"
     volumes:
       - insights_mongo_data:/data/db
+      # Sem contentor à parte: o Mongo corre este .js só quando /data/db está vazio (primeira subida ou após down -v).
+      - ./docker/mongo/seed-insights-keycloak-dev.js:/docker-entrypoint-initdb.d/01-seed-insights-dev.js:ro
     healthcheck:
       test:
         [
@@ -64,8 +66,6 @@ services:
     depends_on:
       mongo:
         condition: service_healthy
-      mongo-seed:
-        condition: service_completed_successfully
     networks:
       - insights
 
@@ -117,19 +117,6 @@ services:
       start_period: 120s
     networks:
       - insights
-
-  mongo-seed:
-    image: mongo:6
-    container_name: insights-mongo-seed
-    volumes:
-      - ./docker/mongo/seed-insights-keycloak-dev.js:/seed.js:ro
-    networks:
-      - insights
-    depends_on:
-      mongo:
-        condition: service_healthy
-    entrypoint: ["mongosh", "mongodb://mongo:27017/qa-pbi", "/seed.js"]
-    restart: "no"
 
 networks:
   insights:

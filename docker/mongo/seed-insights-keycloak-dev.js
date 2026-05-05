@@ -2,8 +2,9 @@
  * Seed idempotente: tenant + customer + user em Mongo (campos alinhados ao realm futuro `insights-dev`).
  * Keycloak NÃO precisa de estar a correr — uso atual é só dados base em Mongo.
  *
- * Na stack Compose da raiz o job mongo-seed corre automaticamente antes da API.
- * Para repetir só o seed: docker compose run --rm mongo-seed
+ * Na primeira subida do Mongo com volume vazio, o Docker Compose monta este ficheiro em
+ * /docker-entrypoint-initdb.d (sem contentor extra). Para repetir à mão:
+ *   docker compose exec mongo mongosh mongodb://127.0.0.1:27017/qa-pbi /docker-entrypoint-initdb.d/01-seed-insights-dev.js
  * ou, no host (Mongo local):
  *   mongosh "mongodb://127.0.0.1:27017/qa-pbi" --file docker/mongo/seed-insights-keycloak-dev.js
  *

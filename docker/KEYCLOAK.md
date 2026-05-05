@@ -6,12 +6,12 @@ Quando no futuro existir essa fase, **Keycloak** será um IdP (**OpenID Connect*
 
 ---
 
-**Seed Mongo (já faz parte da stack atual):** em cada `docker compose up --build` na raiz, **`mongo-seed`** corre antes da API (`docker/mongo/seed-insights-keycloak-dev.js` — nome histórico). Popula Mongo **sem precisar de Keycloak** a correr; campos como `realmId` ficam alinhados para **eventual** SSO.
+**Seed Mongo:** o script [`docker/mongo/seed-insights-keycloak-dev.js`](./mongo/seed-insights-keycloak-dev.js) monta-se em `/docker-entrypoint-initdb.d/` no serviço **Mongo** do Compose — corre na **primeira inicialização** do volume de dados (sem contentor `insights-mongo-seed`). Popula Mongo **sem Keycloak**; campos como `realmId` ficam para eventual SSO.
 
-Para repetir só o seed:
+Para repetir o seed à mão:
 
 ```bash
-docker compose run --rm mongo-seed
+docker compose exec mongo mongosh mongodb://127.0.0.1:27017/qa-pbi /docker-entrypoint-initdb.d/01-seed-insights-dev.js
 ```
 
 ## Quando Keycloak for ligado (futuro)
@@ -20,7 +20,7 @@ docker compose run --rm mongo-seed
 2. **`KEYCLOAK_URL=http://keycloak:8080`**
 3. `docker compose --profile keycloak up --build`
 
-O **mongo-seed** já terá corrido no fluxo normal; o Keycloak importa o realm em `docker/keycloak/import`.
+O seed no Mongo segue o fluxo acima (initdb ou exec manual); o Keycloak importa o realm em `docker/keycloak/import`.
 
 Fluxo geral do monorepo: [README principal](../README.md#como-rodar).
 

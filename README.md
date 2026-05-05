@@ -62,7 +62,7 @@ graph LR
 graph LR
     Browser["Navegador"]
 
-    subgraph Compose["Docker Compose insights-platform\n(Mongo → seed → API + Web)"]
+    subgraph Compose["Docker Compose insights-platform\n(Mongo + API + Web; seed na 1.ª init do volume)"]
         Web["insights.web\nNext dev :3000"]
         Api["insights.api\nserverless-offline :4001"]
         MongoLocal[("MongoDB :27017")]
@@ -121,7 +121,16 @@ cp .env.docker.example .env
 docker compose up --build
 ```
 
-Depois do **build**, o Compose sobe o **MongoDB**, corre o job **`mongo-seed`** uma vez (script idempotente [`docker/mongo/seed-insights-keycloak-dev.js`](docker/mongo/seed-insights-keycloak-dev.js) — nome histórico; **não exige Keycloak**, só grava documentos base em Mongo), só então inicia a **API** (`:4001`) e o **Next.js** (`:3000`). Para repetir só o seed: `docker compose run --rm mongo-seed`.
+Depois do **build**, o Compose sobe **MongoDB**, **API** (`:4001`) e **Next.js** (`:3000`).  
+**Seed em Mongo:** o ficheiro [`docker/mongo/seed-insights-keycloak-dev.js`](docker/mongo/seed-insights-keycloak-dev.js) está montado em `/docker-entrypoint-initdb.d/` **dentro da imagem Mongo** — corre **automaticamente só na primeira inicialização** do volume de dados (volume novo ou depois de `docker compose down -v`). **Não há contentor separado** para seed.
+
+Para **voltar a executar** o seed num volume que já existe:
+
+```bash
+docker compose exec mongo mongosh mongodb://127.0.0.1:27017/qa-pbi /docker-entrypoint-initdb.d/01-seed-insights-dev.js
+```
+
+(No host, sem Docker na API: `npm run seed:mongo:keycloak` em `insights.api`, com Mongo acessível.)
 
 **Fluxo atual:** login **e-mail + senha** na API (JWT, dados em Mongo). **`KEYCLOAK_URL`** deixa-se **vazio** — não estamos a usar IdP local.
 
@@ -155,7 +164,8 @@ O front precisa da API em algum host — ver READMEs: [insights.api/README.md](i
 ### Modo desenvolvimento (hot reload sem rebuild da imagem)
 
 1. Subir só o Mongo (`insights.api/docker-compose.yml` ou `docker compose up -d mongo` na raiz).
-2. Aplicar dados de desenvolvimento no Mongo: `docker compose run --rm mongo-seed` (na raiz, com o Mongo acessível na rede Compose).
+2. **Opcional — aplicar seed** se o volume já existia e nunca correu init:  
+   `docker compose exec mongo mongosh mongodb://127.0.0.1:27017/qa-pbi /docker-entrypoint-initdb.d/01-seed-insights-dev.js`
 3. `cd insights.api && npm run dev` (`:4001`)
 4. `cd insights.web && yarn dev` (`:3000`)
 
@@ -163,9 +173,9 @@ Alternativa API: `npm run dev:local` (Fastify `:45000`) — [insights.api/README
 
 ### MongoDB ou Compose a falhar?
 
-1. **Ver mensagens:** `docker compose logs mongo` e `docker compose logs mongo-seed` (o seed corre antes da API; se falhar, o serviço `api` não sobe).
-2. **Porta 27017 ocupada** no host (outro Mongo a correr): pare esse serviço **ou** mapeie outra porta no `docker-compose.yml`, por exemplo `27018:27017`. Os serviços `api` / `mongo-seed` na rede Docker continuam a usar `mongo:27017` — não precisas de mudar `MONGODB_URI` no `.env` **dentro** do Compose. Só ajustas a URI se a API correr **fora** do Docker e falar com o Mongo publicado no host (ex.: `mongodb://127.0.0.1:27018/qa-pbi`).
-3. **Docker Compose antigo:** é preciso Compose **v2+** para `depends_on: condition: service_completed_successfully` (instalar/atualizar Docker Desktop ou plugin `compose`).
+1. **Ver mensagens:** `docker compose logs mongo`.
+2. **Porta 27017 ocupada** no host (outro Mongo a correr): pare esse serviço **ou** mapeie outra porta no `docker-compose.yml`, por exemplo `27018:27017`. Os serviços na rede Docker continuam a usar `mongo:27017` — não precisas de mudar `MONGODB_URI` no `.env` **dentro** do Compose. Só ajustas a URI se a API correr **fora** do Docker e falar com o Mongo publicado no host (ex.: `mongodb://127.0.0.1:27018/qa-pbi`).
+3. **Seed não foi aplicado** (volume Mongo já existia): o init só corre com diretório de dados **vazio**. Usa o comando `docker compose exec mongo mongosh ...` em [Como rodar](#como-rodar) ou `docker compose down -v` para forçar primeira inicialização (apaga dados).
 4. **Recomeçar do zero** (apaga dados do volume Mongo deste projeto):  
    `docker compose down -v` → voltar a `docker compose up --build`.
 
@@ -173,7 +183,7 @@ Alternativa API: `npm run dev:local` (Fastify `:45000`) — [insights.api/README
 
 | Item | Observação |
 |------|------------|
-| **Mongo (seed dev)** | **mongo-seed** cria/atualiza tenant (`urlSlug` https://localhost:3000), customer e utilizador **`dev@example.com`** — **sem precisar de Keycloak**. O script tem nome histórico (`seed-insights-keycloak-dev.js`). Login **clássico** na UI depende da API e de palavra-passe persistida em Mongo conforme as rotas de auth (o seed pode não criar hash). |
+| **Mongo (seed dev)** | Na **primeira** subida com volume vazio, o Mongo corre o script em `docker-entrypoint-initdb.d` (sem contentor extra). Para repetir: comando `exec mongosh` na secção [Como rodar](#como-rodar) ou `npm run seed:mongo:keycloak` no host. Login **clássico** na UI depende da API e da palavra-passe em Mongo (o seed pode não criar hash). |
 | **Keycloak / SSO** | **Fora de uso neste momento.** Material no repo só para **futuro** — [docker/KEYCLOAK.md](docker/KEYCLOAK.md). |
 | **Azure / Power BI** | Client ID, secret, tenant, utilizador — [.env.docker.example](.env.docker.example) e `insights.api/config/local.yml`. |
 | **NextAuth** | `NEXTAUTH_SECRET` em dev — exemplo na raiz `.env.docker.example`. |
