@@ -103,13 +103,8 @@ export function welcomeAndCreatePasswordTemplate(name: string, link: string) {
                                                     <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse: collapse; border-spacing: 0px;">
                                                         <tbody>
                                                             <tr>
-                                                                <td style="width: 100px;">
-                                                                    <img
-                                                                        height="auto"
-                                                                        src="https://assets-global.website-files.com/649d8bab74af97091fdaa43e/64a3028df7e3b58f53d7f073_Logo-novo-Afya.png"
-                                                                        style="border: 0; display: block; outline: none; text-decoration: none; height: auto; width: 100%; font-size: 13px;"
-                                                                        width="100"
-                                                                    />
+                                                                <td align="center" style="padding: 10px 25px;">
+                                                                    <div style="font-family: 'Open Sans', Helvetica, Arial, sans-serif; font-size: 22px; font-weight: 600; color: #ce0056;">Insights Platform</div>
                                                                 </td>
                                                             </tr>
                                                         </tbody>
@@ -144,7 +139,7 @@ export function welcomeAndCreatePasswordTemplate(name: string, link: string) {
                                             <tr>
                                                 <td align="center" style="font-size: 0px; padding: 10px 25px; padding-right: 25px; padding-left: 25px; word-break: break-word;">
                                                     <div style="font-family: open Sans Helvetica, Arial, sans-serif; font-size: 16px; line-height: 1; text-align: center; color: #000000;">
-                                                        Sua conta foi cadastrada no Afya Insights. Clique no botão abaixo para acessar o sistema.
+                                                        Sua conta foi cadastrada no Insights Platform. Clique no botão abaixo para acessar o sistema.
                                                     </div>
                                                 </td>
                                             </tr>
@@ -172,7 +167,7 @@ export function welcomeAndCreatePasswordTemplate(name: string, link: string) {
                                                                     "
                                                                     target="_blank"
                                                                 >
-                                                                    Acesse o Afya Insights
+                                                                    Acesse o Insights Platform
                                                                 </a>
                                                             </td>
                                                         </tr>
@@ -183,7 +178,7 @@ export function welcomeAndCreatePasswordTemplate(name: string, link: string) {
                                                 <td align="center" style="font-size: 0px; padding: 10px 25px; padding-right: 25px; padding-left: 25px; word-break: break-word;">
                                                     <div style="font-family: open Sans Helvetica, Arial, sans-serif; font-size: 16px; line-height: 1; text-align: center; color: #000000;">
                                                         Obrigado!<br />
-                                                        Time Afya
+                                                        Time Insights Platform
                                                     </div>
                                                 </td>
                                             </tr>

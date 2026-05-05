@@ -2,8 +2,8 @@ config:
   packageIndividually: false
   profile: ${self:custom.stage}
   domain:
-    url: "qa-api-insights.afya.com.br"
-    certificate: "*.afya.com.br"
+    url: "qa-api.insights.example.com"
+    certificate: "*.insights.example.com"
 
 custom:
   verifyPriceHistoryEnabled: false
@@ -13,22 +13,22 @@ custom:
 environment:
   AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1"
   NODE_OPTIONS: "--enable-source-maps --stack-trace-limit=1000"
-  NODE_ENV: "https://qa-insights.afya.com.br"
-  MONGODB_URI: ${ssm:/MONGO_DATABASE_AFYA_INSIGHTS}
+  NODE_ENV: "qa"
+  MONGODB_URI: ${ssm:/insights-platform/qa/MONGODB_URI}
   SECRET_TOKEN_EXPIRE: "24h"
-  SECRET_TOKEN: ${ssm:/JWT_AUTH_KEY_AFYA_INSIGHTS}
+  SECRET_TOKEN: ${ssm:/insights-platform/qa/JWT_SECRET}
   DEFINE_PASSWORD_TOKEN_EXPIRE: "2h"
-  AZURE_API: ${ssm:/AFYA_INSIGHTS_AZURE_API}
-  AZURE_CLIENT_ID: ${ssm:/AFYA_INSIGHTS_AZURE_CLIENT_ID}
-  AZURE_CLIENT_SECRET_VALUE: ${ssm:/AFYA_INSIGHTS_AZURE_CLIENT_SECRET_VALUE}
-  AZURE_TENANT_ID: ${ssm:/AFYA_INSIGHTS_AZURE_TENANT_ID}
-  AZURE_RESOURCE: ${ssm:/AFYA_INSIGHTS_AZURE_RESOURCE}
-  AZURE_USERNAME: ${ssm:/AFYA_INSIGHTS_AZURE_USERNAME}
-  AZURE_PASSWORD: ${ssm:/AFYA_INSIGHTS_AZURE_PASSWORD}
-  EMBED_PBI_API_URL: ${ssm:/AFYA_INSIGHTS_EMBED_PBI_API_URL}
-  SITE_URL: "https://qa-insights.afya.com.br"
-  AFYA_ADMIN_CREDENTIALS: ${ssm:/AFYA_ADMIN_CREDENTIALS}
-  AWS_SOURCE_EMAIL: "naoresponda@afya.com.br"
+  AZURE_API: ${ssm:/insights-platform/qa/AZURE_API}
+  AZURE_CLIENT_ID: ${ssm:/insights-platform/qa/AZURE_CLIENT_ID}
+  AZURE_CLIENT_SECRET_VALUE: ${ssm:/insights-platform/qa/AZURE_CLIENT_SECRET_VALUE}
+  AZURE_TENANT_ID: ${ssm:/insights-platform/qa/AZURE_TENANT_ID}
+  AZURE_RESOURCE: ${ssm:/insights-platform/qa/AZURE_RESOURCE}
+  AZURE_USERNAME: ${ssm:/insights-platform/qa/AZURE_USERNAME}
+  AZURE_PASSWORD: ${ssm:/insights-platform/qa/AZURE_PASSWORD}
+  EMBED_PBI_API_URL: ${ssm:/insights-platform/qa/EMBED_PBI_API_URL}
+  SITE_URL: "https://qa.insights.example.com"
+  INSIGHTS_ADMIN_CREDENTIALS: ${ssm:/insights-platform/qa/INSIGHTS_ADMIN_CREDENTIALS}
+  AWS_SOURCE_EMAIL: "noreply@example.com"
 
 deploymentBucket:
   name: insights-stg-serverless-deploy

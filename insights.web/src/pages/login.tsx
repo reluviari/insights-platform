@@ -92,7 +92,7 @@ export default function Login() {
                 style={{ fontSize: "28px", lineHeight: "34px" }}
                 className="mt-6 text-neutral-900 not-italic font-semibold"
               >
-                Boas-vindas ao Afya Insights
+                Boas-vindas ao Insights Platform
               </h2>
               <p
                 style={{ lineHeight: "19px" }}

@@ -1,12 +1,16 @@
+# Substitua por um fluxo da sua organização (Sonar, Snyk, CodeQL, etc.).
+# O workflow reutilizável da foundation foi removido deste fork.
+
 on:
   push:
-    branches: [main, qa]
-    tags:
-      - '[0-9]+.[0-9]+.[0-9]+'
+    branches: [main]
   workflow_dispatch:
 
 jobs:
-  Security:
-    uses: adhfoundation/gha-templates/.github/workflows/security.yml@main
-    secrets:
-      SONAR_FOUNDATION_TOKEN: ${{ secrets.SONAR_FOUNDATION_TOKEN }}
+  security-placeholder:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lembrete
+        run: |
+          echo "Configure aqui o scanner de segurança corporativo (ou desative este job)."

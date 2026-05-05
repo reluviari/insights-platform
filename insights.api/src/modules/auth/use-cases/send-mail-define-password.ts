@@ -30,7 +30,7 @@ export class SendMailDefinePasswordUseCase {
 
       await sendEmail({
         emailTo: email,
-        emailSubject: TypeMail.WELCOME ? "Bem-vindo à Afya insights" : "Definição de Senha",
+        emailSubject: TypeMail.WELCOME ? "Bem-vindo ao Insights Platform" : "Definição de Senha",
         emailBody: htmlTemplate,
       });
 

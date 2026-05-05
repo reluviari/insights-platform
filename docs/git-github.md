@@ -21,12 +21,13 @@ O objetivo é um **único repositório Git** na raiz **`insights-platform`**, co
    git status
    git commit -m "chore: inicializa monorepo insights-platform na raiz"
    ```
-6. Crie o repositório no GitHub (vazio) e associe:
+6. Associe o remoto e envie a branch principal (repositório canônico deste monorepo):
    ```bash
-   git remote add origin https://github.com/<org>/<repo>.git
+   git remote add origin https://github.com/reluviari/insights-platform.git
    git branch -M main
    git push -u origin main
    ```
+   Se o remoto já existir com outro nome, use `git remote set-url origin https://github.com/reluviari/insights-platform.git`.
 
 ## Boas práticas
 

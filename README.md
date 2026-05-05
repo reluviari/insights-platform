@@ -2,6 +2,8 @@
 
 Monorepo do produto **Insights Platform** (pasta do repositório: `insights-platform`), com **interface Next.js** (`insights.web`), **API serverless TypeScript** (`insights.api`, AWS Lambda via Serverless Framework), multi-tenant, **MongoDB**, **Azure AD** e integração **Microsoft Power BI** (embed).
 
+**Código-fonte:** [github.com/reluviari/insights-platform](https://github.com/reluviari/insights-platform)
+
 ## Ambiente de produção / demo
 
 Não há URLs públicas de demo fixas neste repositório: **front e API em produção dependem do deploy da sua organização** (AWS, domínio do tenant, credenciais Microsoft). Para testar localmente, use a seção [Como rodar](#como-rodar).
@@ -45,7 +47,7 @@ graph LR
     PowerBiHost["Power BI embed\napp.powerbi.com"]
 
     Browser --> NextUi
-    NextUi -->|"HTTPS JSON\nNEXT_PUBLIC_AFYA_INSIGHTS_API"| APIGW
+    NextUi -->|"HTTPS JSON\nNEXT_PUBLIC_INSIGHTS_API"| APIGW
     APIGW --> Handlers
     Handlers -->|"Mongoose"| MongoDb
     Handlers -->|"OpenID Connect"| KeycloakSvc

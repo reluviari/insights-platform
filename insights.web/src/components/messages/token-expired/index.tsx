@@ -45,7 +45,7 @@ const MessageTokenExpired: React.FC<MessageTokenExpiredProps> = ({ isExpired }) 
               Identificamos um novo login na plataforma, realizado com os seus dados de acesso.
             </p>
             <p className={textStyle}>
-              No <b>Afya Insights</b> permitimos apenas uma sessão ativa por usuário, por isso
+              No <b>Insights Platform</b> permitimos apenas uma sessão ativa por usuário, por isso
               interrompemos esta sessão.
             </p>
             <p className={textStyle}>

@@ -52,8 +52,8 @@ export default function Menu(props: IMenuData) {
     />
   );
 
-  const LogoAfya = <Image src={"/logoafya.png"} alt="logafya" width={78} height={34} />;
-  const LogoAfyaSmall = <Image src={"/smallLogo.png"} alt="smalllog" width={32} height={34} />;
+  const LogoMenu = <Image src={"/logo-menu.png"} alt="Insights Platform" width={78} height={34} />;
+  const LogoMenuSmall = <Image src={"/smallLogo.png"} alt="Insights Platform" width={32} height={34} />;
 
   const classWidth = classNames({
     "min-w-[330px]": isMenuOpen,
@@ -78,7 +78,7 @@ export default function Menu(props: IMenuData) {
             "justify-start": isMenuOpen,
           })}
         >
-          {isMenuOpen ? LogoAfya : LogoAfyaSmall}
+          {isMenuOpen ? LogoMenu : LogoMenuSmall}
         </div>
         <hr className="h-1 text-neutral-0" />
       </div>

@@ -3,8 +3,9 @@ import { ExceptionsConstants } from "@/commons/consts/exceptions";
 import { HttpStatus, ResponseError } from "@foundation/lib";
 import { generateRandomHex } from "./generate-random-hex";
 
-const AWS_S3_ACCESS_KEY_ID = process.env.AFYA_ADMIN_CREDENTIALS.split(";")[0];
-const AWS_S3_SECRET_KEY = process.env.AFYA_ADMIN_CREDENTIALS.split(";")[1];
+const creds = process.env.INSIGHTS_ADMIN_CREDENTIALS ?? "";
+const AWS_S3_ACCESS_KEY_ID = creds.split(";")[0] ?? "";
+const AWS_S3_SECRET_KEY = creds.split(";")[1] ?? "";
 
 aws.config.update({
   accessKeyId: AWS_S3_ACCESS_KEY_ID,
@@ -32,7 +33,11 @@ export async function uploadImageToS3(file: string) {
 
     const hash = await generateRandomHex();
 
-    const bucketName = process.env.NODE_ENV === "production" ? "afya-static-insights" : "afya-static-insights-qa";
+    const bucketName =
+      process.env.INSIGHTS_S3_BUCKET ??
+      (process.env.NODE_ENV === "production"
+        ? "insights-platform-static-prod"
+        : "insights-platform-static-qa");
 
     const params = {
       Bucket: bucketName,

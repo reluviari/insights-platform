@@ -36,7 +36,7 @@ services:
       MONGODB_URI: ${MONGODB_URI:-mongodb://mongo:27017/qa-pbi}
       KEYCLOAK_URL: ${KEYCLOAK_URL:-}
       SITE_URL: ${SITE_URL:-http://localhost:3000}
-      AFYA_ADMIN_CREDENTIALS: ${AFYA_ADMIN_CREDENTIALS:-placeholder_access;placeholder_secret}
+      INSIGHTS_ADMIN_CREDENTIALS: ${INSIGHTS_ADMIN_CREDENTIALS:-placeholder_access;placeholder_secret}
       AZURE_CLIENT_ID: ${AZURE_CLIENT_ID:-}
       AZURE_CLIENT_SECRET_VALUE: ${AZURE_CLIENT_SECRET_VALUE:-}
       AZURE_TENANT_ID: ${AZURE_TENANT_ID:-}
@@ -62,7 +62,7 @@ services:
     container_name: insights-web
     restart: unless-stopped
     environment:
-      NEXT_PUBLIC_AFYA_INSIGHTS_API: ${NEXT_PUBLIC_AFYA_INSIGHTS_API:-http://localhost:4001}
+      NEXT_PUBLIC_INSIGHTS_API: ${NEXT_PUBLIC_INSIGHTS_API:-http://localhost:4001}
       NEXT_PUBLIC_EMBED_PBI_APP_URL: ${NEXT_PUBLIC_EMBED_PBI_APP_URL:-https://app.powerbi.com}
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-dev-only-change-me}

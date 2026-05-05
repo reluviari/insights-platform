@@ -11,7 +11,7 @@ import { selectAuthToken } from "@src/store/slices/login/selectors";
 import axios from "axios";
 import qs from "qs";
 
-axios.defaults.baseURL = `${process.env.NEXT_PUBLIC_AFYA_INSIGHTS_API}/api`;
+axios.defaults.baseURL = `${process.env.NEXT_PUBLIC_INSIGHTS_API}/api`;
 axios.defaults.withCredentials = false;
 
 axios.interceptors.request.use(
@@ -45,7 +45,7 @@ axios.interceptors.response.use(config => {
 export const api = axios;
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: `${process.env.NEXT_PUBLIC_AFYA_INSIGHTS_API}/api`,
+  baseUrl: `${process.env.NEXT_PUBLIC_INSIGHTS_API}/api`,
   prepareHeaders(headers, api) {
     const token = selectAuthToken(store.getState());
     if (token) {

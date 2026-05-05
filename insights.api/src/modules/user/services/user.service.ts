@@ -33,7 +33,7 @@ export class UserService implements IUserService {
 
     // await sendEmail({
     //   emailTo: data?.email,
-    //   emailSubject: "Bem-vindo à Afya insights",
+    //   emailSubject: "Bem-vindo ao Insights Platform",
     //   emailBody: htmlTemplate,
     // });
 

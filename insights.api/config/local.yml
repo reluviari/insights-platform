@@ -2,8 +2,8 @@ config:
   packageIndividually: false
   profile: ""
   domain:
-    url: "api.afya-local.com.br"
-    certificate: "*.afya-local.com.br"
+    url: "api.local.insights-platform.test"
+    certificate: "*.local.insights-platform.test"
 
 custom:
   verifyPriceHistoryEnabled: false
@@ -30,10 +30,10 @@ environment:
   AZURE_CLIENT_SECRET_VALUE: ${env:AZURE_CLIENT_SECRET_VALUE, ''}
   AZURE_TENANT_ID: ${env:AZURE_TENANT_ID, ''}
   AZURE_RESOURCE: ${env:AZURE_RESOURCE, 'https://analysis.windows.net/powerbi/api'}
-  AZURE_USERNAME: ${env:AZURE_USERNAME, 'medcel.bi.ti@afya.com.br'}
+  AZURE_USERNAME: ${env:AZURE_USERNAME, 'user@example.com'}
   AZURE_PASSWORD: ${env:AZURE_PASSWORD, ''}
-  AFYA_ADMIN_CREDENTIALS: ${env:AFYA_ADMIN_CREDENTIALS, ''}
-  AWS_SOURCE_EMAIL: ${env:AWS_SOURCE_EMAIL, 'naoresponda@afya.com.br'}
+  INSIGHTS_ADMIN_CREDENTIALS: ${env:INSIGHTS_ADMIN_CREDENTIALS, ''}
+  AWS_SOURCE_EMAIL: ${env:AWS_SOURCE_EMAIL, 'noreply@example.com'}
 
 vpc:
   securityGroupIds: "*"

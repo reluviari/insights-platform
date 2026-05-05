@@ -12,11 +12,8 @@ const scanRepositoryCmd = `docker run -v ${__dirname}/../:/app:ro\
 
 const removeImageCmd = `docker rmi ${imageName}`;
 
-const playbookLink = "https://nreeducacional.sharepoint.com/:w:/r/sites/SREAfya/Documentos%20Compartilhados/playbooks-devsecops/medcel/playbook-gitleaks.docx?d=w748de0d70a7b4a7cb11df2dfba359621&csf=1&web=1&e=C76vB6";
-const complementaryMessage = `\n**Importante não alterar o arquivo de configuração, sem antes alinhar com o time de desecops(Foundation).\nEm caso de dúvidas e/ou ter credenciais hardcoded no projeto, realizar \
-a leitura do playbook em: ${playbookLink}, e em caso de dúvidas remanescentes entrar em contato com o \
-time de devsecops:\nJan Palach: jan.palach@afya.com.br\nDiego Sandrim: diego.sandrim@afya.com.br\n\
-Rafael Amaral: rafael.amaral@afya.com.br\n`;
+const playbookLink = "https://example.com/internal/security/gitleaks-playbook";
+const complementaryMessage = `\n**Importante:** não altere o .gitleaks.toml sem alinhar com o time de segurança.\nLeia o playbook interno (configure o URL em devsecops-secrets-detection/secrets-detection.js) e contate o canal de segurança da sua organização.\n`;
 
 
 function execCommandSync(command) {

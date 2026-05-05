@@ -4,8 +4,8 @@ import logger from "./logger.provider";
 
 
 
-const AWS_ACCESS_KEY_ID = process.env?.AFYA_ADMIN_CREDENTIALS?.split(";")[0];
-const AWS_SECRET_KEY = process.env?.AFYA_ADMIN_CREDENTIALS?.split(";")[1];
+const AWS_ACCESS_KEY_ID = process.env?.INSIGHTS_ADMIN_CREDENTIALS?.split(";")[0];
+const AWS_SECRET_KEY = process.env?.INSIGHTS_ADMIN_CREDENTIALS?.split(";")[1];
 const EMAILSOURCE = process.env?.AWS_SOURCE_EMAIL;
 
 AWS.config.update({

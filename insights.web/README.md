@@ -4,7 +4,7 @@ Interface **Next.js 13** (React 18) da plataforma de relatórios Power BI embuti
 
 ## Arquitetura
 
-O browser carrega o **Next.js**; páginas e estado (Redux / RTK Query) chamam a **insights.api** via `NEXT_PUBLIC_AFYA_INSIGHTS_API`. Para relatórios, o fluxo combina **chamadas à API** (tokens, metadados) com o **SDK Power BI no cliente** (`powerbi-client-react`), que conversa com **app.powerbi.com** no iframe.
+O browser carrega o **Next.js**; páginas e estado (Redux / RTK Query) chamam a **insights.api** via `NEXT_PUBLIC_INSIGHTS_API`. Para relatórios, o fluxo combina **chamadas à API** (tokens, metadados) com o **SDK Power BI no cliente** (`powerbi-client-react`), que conversa com **app.powerbi.com** no iframe.
 
 Estilo de diagrama alinhado ao [README de referência (front Teddy Open Finance)](https://github.com/reluviari/teddy-open-finance-challenge/blob/main/apps/front-end/README.md).
 
@@ -63,7 +63,7 @@ graph LR
    ```
 
 2. Em `.env`, confira pelo menos:
-   - `NEXT_PUBLIC_AFYA_INSIGHTS_API` — URL da API (ex.: `http://localhost:4001` com serverless-offline na sua máquina ou em Docker com portas publicadas nos mesmos valores).
+   - `NEXT_PUBLIC_INSIGHTS_API` — URL da API (ex.: `http://localhost:4001` com serverless-offline na sua máquina ou em Docker com portas publicadas nos mesmos valores).
    - `NEXTAUTH_URL` — normalmente `http://localhost:3000` em dev.
    - `NEXTAUTH_SECRET` — defina um valor qualquer em desenvolvimento.
 
@@ -102,7 +102,7 @@ Veja [`.env.example`](.env.example). Principais:
 
 | Variável | Descrição |
 |----------|-----------|
-| `NEXT_PUBLIC_AFYA_INSIGHTS_API` | Base URL da API |
+| `NEXT_PUBLIC_INSIGHTS_API` | Base URL da API |
 | `NEXT_PUBLIC_EMBED_PBI_APP_URL` | Host do cliente Power BI (embed) |
 | `NEXTAUTH_URL` / `NEXTAUTH_SECRET` | NextAuth |
 
