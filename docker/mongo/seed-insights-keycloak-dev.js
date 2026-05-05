@@ -1,6 +1,6 @@
 /**
- * Seed idempotente: tenant + customer + user alinhados ao realm Keycloak `insights-dev`
- * (clientId `insights-web`, utilizador dev@example.com / DevPass123!).
+ * Seed idempotente: tenant + customer + user em Mongo (campos alinhados ao realm futuro `insights-dev`).
+ * Keycloak NÃO precisa de estar a correr — uso atual é só dados base em Mongo.
  *
  * Na stack Compose da raiz o job mongo-seed corre automaticamente antes da API.
  * Para repetir só o seed: docker compose run --rm mongo-seed

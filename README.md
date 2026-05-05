@@ -41,7 +41,7 @@ graph LR
     end
 
     MongoDb[("MongoDB")]
-    KeycloakSvc["Keycloak\nSSO opcional"]
+    KeycloakSvc["Keycloak\n(futuro / SSO)"]
     AzureAd["Azure AD"]
     PowerBiApi["Power BI REST\napi.powerbi.com"]
     PowerBiHost["Power BI embed\napp.powerbi.com"]
@@ -77,7 +77,7 @@ graph LR
     Web -->|"Embed iframe"| MicrosoftCloud
 ```
 
-_Keycloak (SSO) não faz parte da stack por defeito — perfil opcional `keycloak`; ver [docker/KEYCLOAK.md](docker/KEYCLOAK.md)._
+_Keycloak **não está em uso neste momento** — existe apenas preparação no repositório (perfil Compose, `docker/`) para uma eventual fase futura de SSO; ver [docker/KEYCLOAK.md](docker/KEYCLOAK.md)._
 
 ### Sequência — obter token de embed e exibir relatório
 
@@ -102,7 +102,7 @@ sequenceDiagram
     Browser->>PBI: Carrega visual no iframe
 ```
 
-> Versão com **módulos internos**: [insights.api/README.md](insights.api/README.md#arquitetura) · [insights.web/README.md](insights.web/README.md#arquitetura) · Keycloak local: [docker/KEYCLOAK.md](docker/KEYCLOAK.md)
+> Versão com **módulos internos**: [insights.api/README.md](insights.api/README.md#arquitetura) · [insights.web/README.md](insights.web/README.md#arquitetura). **SSO / Keycloak (só futuro):** [docker/KEYCLOAK.md](docker/KEYCLOAK.md).
 
 ## Pré-requisitos
 
@@ -121,9 +121,9 @@ cp .env.docker.example .env
 docker compose up --build
 ```
 
-Depois do **build**, o Compose sobe o **MongoDB**, corre o job **`mongo-seed`** uma vez (script idempotente em [`docker/mongo/seed-insights-keycloak-dev.js`](docker/mongo/seed-insights-keycloak-dev.js), alinha tenant/customer/utilizador de desenvolvimento — ver [Credenciais e dados de teste](#credenciais-e-dados-de-teste)), só então inicia a **API** (Serverless Offline `:4001`) e o **Next.js** (`:3000`). Para voltar a aplicar só o seed com o Mongo já a correr: `docker compose run --rm mongo-seed`.
+Depois do **build**, o Compose sobe o **MongoDB**, corre o job **`mongo-seed`** uma vez (script idempotente [`docker/mongo/seed-insights-keycloak-dev.js`](docker/mongo/seed-insights-keycloak-dev.js) — nome histórico; **não exige Keycloak**, só grava documentos base em Mongo), só então inicia a **API** (`:4001`) e o **Next.js** (`:3000`). Para repetir só o seed: `docker compose run --rm mongo-seed`.
 
-Login padrão na UI: **e-mail e senha** → API → JWT (Mongo). Variáveis: [.env.docker.example](.env.docker.example) (front: `NEXT_PUBLIC_*`; API: Mongo, Azure opcional; `KEYCLOAK_URL` vazio por defeito).
+**Fluxo atual:** login **e-mail + senha** na API (JWT, dados em Mongo). **`KEYCLOAK_URL`** deixa-se **vazio** — não estamos a usar IdP local.
 
 | Serviço | URL |
 |---------|-----|
@@ -131,22 +131,16 @@ Login padrão na UI: **e-mail e senha** → API → JWT (Mongo). Variáveis: [.e
 | API (offline) | [http://localhost:4001](http://localhost:4001) |
 | Health check | `GET http://localhost:4001/api/health-check` |
 | MongoDB (host) | `localhost:27017` |
-| Keycloak (perfil `keycloak`) | [http://localhost:8080](http://localhost:8080) |
 
 ```bash
 curl -s http://localhost:4001/api/health-check
 ```
 
-### Keycloak / SSO (opcional)
+Modelo de variáveis: [.env.docker.example](.env.docker.example).
 
-SSO corporativo (**OpenID Connect**) quando precisar federar identidades — não é obrigatório para o fluxo local típico.
+### SSO / Keycloak — **não usado agora** (só futuro)
 
-```bash
-# No .env: KEYCLOAK_URL=http://keycloak:8080
-docker compose --profile keycloak up --build
-```
-
-Detalhes e utilizador de teste: [docker/KEYCLOAK.md](docker/KEYCLOAK.md). Botão SSO na `/login`: `NEXT_PUBLIC_INSIGHTS_SSO_ENABLED` (ver [.env.docker.example](.env.docker.example)).
+O projeto **não corre Keycloak** no dia a dia. Mantemos perfil Compose `docker/keycloak/import/` e [docker/KEYCLOAK.md](docker/KEYCLOAK.md) como **referência para quando** existir decisão de SSO corporativo — **ignora** no fluxo normal (`docker compose up --build` sem `--profile keycloak`). Na **`/login`**, o botão SSO permanece desligado (`NEXT_PUBLIC_INSIGHTS_SSO_ENABLED=false`).
 
 ### Apps isolados
 
@@ -171,7 +165,8 @@ Alternativa API: `npm run dev:local` (Fastify `:45000`) — [insights.api/README
 
 | Item | Observação |
 |------|------------|
-| **Tenant / utilizadores (dev)** | Em cada `docker compose up --build`, o **mongo-seed** corre antes da API e cria/atualiza tenant (slug `https://localhost:3000`), customer e utilizador **`dev@example.com`** alinhados ao realm Keycloak **insights-dev**. Login **Keycloak** (`type: keycloak`): palavra-passe **`DevPass123!`** quando o Keycloak está no ar — [docker/KEYCLOAK.md](docker/KEYCLOAK.md). Login **clássico** na UI depende da API aceitar credenciais gravadas em Mongo (o seed não define hash de senha para esse fluxo). |
+| **Mongo (seed dev)** | **mongo-seed** cria/atualiza tenant (`urlSlug` https://localhost:3000), customer e utilizador **`dev@example.com`** — **sem precisar de Keycloak**. O script tem nome histórico (`seed-insights-keycloak-dev.js`). Login **clássico** na UI depende da API e de palavra-passe persistida em Mongo conforme as rotas de auth (o seed pode não criar hash). |
+| **Keycloak / SSO** | **Fora de uso neste momento.** Material no repo só para **futuro** — [docker/KEYCLOAK.md](docker/KEYCLOAK.md). |
 | **Azure / Power BI** | Client ID, secret, tenant, utilizador — [.env.docker.example](.env.docker.example) e `insights.api/config/local.yml`. |
 | **NextAuth** | `NEXTAUTH_SECRET` em dev — exemplo na raiz `.env.docker.example`. |
 
@@ -206,9 +201,7 @@ Prefixo **`/api`** com Serverless Offline. Lista completa: `serverless.yml` e `i
 
 Detalhe de produto: **[docs/PRODUCT_SCOPE.md](docs/PRODUCT_SCOPE.md)**
 
-- Multi-tenant: tenant → clientes → departamentos → utilizadores → relatórios  
-- Autenticação: JWT (Mongo); Keycloak opcional (SSO)  
-- Administração de clientes, utilizadores, relatórios e permissões  
+- Autenticação: JWT com dados em **Mongo**. **SSO (Keycloak)** não está em uso — apenas previsto para o futuro (ver [docker/KEYCLOAK.md](docker/KEYCLOAK.md)).
 - Power BI: embed, sincronização, filtros  
 
 ## Stack
@@ -243,7 +236,7 @@ Detalhe de produto: **[docs/PRODUCT_SCOPE.md](docs/PRODUCT_SCOPE.md)**
 | [nx.json](nx.json) + `project.json` | Nx, cache, `nx affected` |
 | [docker-compose.yml](docker-compose.yml) | Mongo + API + Web |
 | [.env.docker.example](.env.docker.example) | Modelo de env para Compose |
-| [docker/KEYCLOAK.md](docker/KEYCLOAK.md) | Keycloak opcional |
+| [docker/KEYCLOAK.md](docker/KEYCLOAK.md) | SSO futuro (Keycloak) — **não faz parte do fluxo atual** |
 
 ## Estrutura de pastas
 

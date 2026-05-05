@@ -5,7 +5,7 @@
 #   cp .env.docker.example .env
 #   docker compose up --build
 #
-# Keycloak (SSO) é opcional — perfil `keycloak`; ver docker/KEYCLOAK.md.
+# Keycloak / SSO: fora de uso — perfil `keycloak` e docker/KEYCLOAK.md só para futuro.
 #
 # O Compose lê o arquivo ".env" na raiz apenas para interpolar variáveis abaixo.
 

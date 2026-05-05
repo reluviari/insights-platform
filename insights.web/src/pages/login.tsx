@@ -41,7 +41,7 @@ export default function Login() {
       type: "warning",
       title: "SSO (Keycloak)",
       message:
-        "O redirecionamento OpenID Connect no browser ainda não está ligado. Consulte README.md na raiz e docker/KEYCLOAK.md para subir o perfil Keycloak e completar o fluxo.",
+        "Keycloak não faz parte do uso atual do projeto. Esta área fica para quando o SSO for implementado.",
     });
   };
 
@@ -188,19 +188,14 @@ export default function Login() {
                 >
                   {insightsSsoEnabled ? (
                     <>
-                      SSO está ligado neste ambiente (`NEXT_PUBLIC_INSIGHTS_SSO_ENABLED`). O fluxo
-                      completo no cliente pode ser implementado quando o Keycloak estiver
-                      configurado (ver documentação do monorepo).
+                      Flag SSO ativa — o fluxo completo ainda não faz parte do roadmap atual da
+                      equipa.
                     </>
                   ) : (
                     <>
-                      <strong className="font-medium text-neutral-500">SSO desativado.</strong> Este
-                      ambiente usa login com e-mail e senha na API. SSO corporativo (Keycloak /
-                      OpenID Connect) é opcional para organizações que precisam federar identidades;
-                      para ativar no futuro, configure o IdP e defina{" "}
-                      <code className="text-neutral-600">NEXT_PUBLIC_INSIGHTS_SSO_ENABLED=true</code>{" "}
-                      — ver README na raiz e <code className="text-neutral-600">docker/KEYCLOAK.md</code>
-                      .
+                      <strong className="font-medium text-neutral-500">SSO (Keycloak) não está em uso.</strong>{" "}
+                      Utilize e-mail e senha na API. O botão fica reservado para uma eventual fase
+                      futura de SSO; não configure Keycloak no fluxo normal de desenvolvimento.
                     </>
                   )}
                 </p>
