@@ -178,8 +178,35 @@ export function Method() {
         return HttpResponse.success(result);
       } catch (error) {
         const hash = new Date().getTime().toString();
-        console.error("[Lib] ControllerError: ", error);
-        console.error("[Lib] Hash: ", hash);
+        const handlerLabel = `${target?.constructor?.name ?? "Handler"}.${propertyKey}`;
+
+        if (HttpResponse.isResponseError(error)) {
+          const status = error.statusCode;
+          const isClientError =
+            status >= HttpStatus.BAD_REQUEST && status < HttpStatus.INTERNAL_SERVER_ERROR;
+
+          if (isClientError) {
+            console.info(
+              `[Lib] ${handlerLabel} → HTTP ${status} ${error.message} (correlation=${hash})`,
+            );
+            if (
+              process.env.NODE_ENV !== "production" &&
+              propertyKey === "auth" &&
+              status === HttpStatus.UNAUTHORIZED
+            ) {
+              console.info(
+                "[Lib] Dev hint (sign-in): credenciais incorretas ou utilizador sem hash de senha no Mongo — reaplique o seed (README: Como rodar).",
+              );
+            }
+          } else {
+            console.error(`[Lib] ${handlerLabel} → HTTP ${status}`, error.message);
+            console.error(error.stack);
+            console.error("[Lib] correlation:", hash);
+          }
+        } else {
+          console.error("[Lib] ControllerError:", error);
+          console.error("[Lib] correlation:", hash);
+        }
 
         if (isSQSSource) throw new Error(error);
         return HttpResponse.error(error, hash);
