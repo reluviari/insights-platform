@@ -144,7 +144,7 @@ Aguarde o Compose construir as imagens de desenvolvimento da API e do Web (prime
 
 O ficheiro [`docker/mongo/seed-insights-keycloak-dev.js`](docker/mongo/seed-insights-keycloak-dev.js) está montado em **`/docker-entrypoint-initdb.d/01-seed-insights-dev.js`** dentro do **serviço `mongo`**. A imagem oficial executa scripts dessa pasta **automaticamente apenas quando o diretório de dados do Mongo está vazio** — típico na primeira subida com um volume novo, ou depois de `docker compose down -v`. **Não há um contentor separado só para seed.**
 
-Se já tens um volume Mongo antigo **sem** ter corrido nunca este init, aplica o seed manualmente:
+Se já tens um volume Mongo antigo **sem** ter corrido nunca este init, ou se o login **401** ocorre com `dev@example.com` / `DevPass123!` porque o documento do utilizador **não tinha** campo `password` (dados anteriores ao seed atual), aplica o seed manualmente — o script faz **`updateOne`** por e-mail e **atualiza o hash** mesmo quando o utilizador já existia com outro `_id`:
 
 ```bash
 docker compose exec mongo mongosh mongodb://127.0.0.1:27017/qa-pbi /docker-entrypoint-initdb.d/01-seed-insights-dev.js

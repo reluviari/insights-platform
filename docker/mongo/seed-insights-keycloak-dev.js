@@ -8,7 +8,8 @@
  * ou, no host (Mongo local):
  *   mongosh "mongodb://127.0.0.1:27017/qa-pbi" --file docker/mongo/seed-insights-keycloak-dev.js
  *
- * O campo password do utilizador é bcrypt (senha em claro documentada no README da raiz).
+ * O utilizador dev é aplicado com updateOne por email: atualiza password (bcrypt) mesmo se o doc já existir com outro _id.
+ * Senha em claro documentada no README da raiz.
  */
 
 const tenantId = ObjectId("507f191e810c19729de860e1");
@@ -47,20 +48,27 @@ db.customers.replaceOne(
   { upsert: true },
 );
 
-db.users.replaceOne(
+const devPasswordHash =
+  "$2a$08$lCBH/LLWsnY0I92FDf81deTsw0oJeptVvgbXVzrP0KaWPf.SIdahq";
+
+db.users.updateOne(
   { email: "dev@example.com" },
   {
-    _id: userId,
-    name: "Dev User (seed)",
-    email: "dev@example.com",
-    clientId: "insights-web",
-    isActive: true,
-    roles: ["USER"],
-    customer: customerId,
-    tenants: [tenantId],
-    password: "$2a$08$lCBH/LLWsnY0I92FDf81deTsw0oJeptVvgbXVzrP0KaWPf.SIdahq",
-    createdAt: now,
-    updatedAt: now,
+    $set: {
+      email: "dev@example.com",
+      name: "Dev User (seed)",
+      clientId: "insights-web",
+      isActive: true,
+      roles: ["USER"],
+      customer: customerId,
+      tenants: [tenantId],
+      password: devPasswordHash,
+      updatedAt: now,
+    },
+    $setOnInsert: {
+      _id: userId,
+      createdAt: now,
+    },
   },
   { upsert: true },
 );
