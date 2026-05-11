@@ -1,6 +1,18 @@
 # Insights Platform
 
-Monorepo orientado por **[Nx](https://nx.dev/)** com **`insights.web`** (Next.js 13, React 18, Redux Toolkit, Tailwind, embed Power BI no cliente) e **`insights.api`** (Serverless Framework 3, handlers AWS Lambda em TypeScript, MongoDB com Mongoose). O produto é uma **plataforma SaaS multi-tenant** de BI white-label com relatórios **Microsoft Power BI** incorporados na web, gestão de clientes, departamentos e utilizadores, e integrações **Azure AD** para tokens de serviço / utilizador junto da API do Power BI.
+[![Nx](https://img.shields.io/badge/Nx-Monorepo-143055?logo=nx&logoColor=white)](https://nx.dev/)
+[![Next.js](https://img.shields.io/badge/Next.js-13-000000?logo=next.js&logoColor=white)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![Redux Toolkit](https://img.shields.io/badge/Redux_Toolkit-764ABC?logo=redux&logoColor=white)](https://redux-toolkit.js.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Serverless](https://img.shields.io/badge/Serverless-Framework_3-FD5750?logo=serverless&logoColor=white)](https://www.serverless.com/)
+[![AWS Lambda](https://img.shields.io/badge/AWS-Lambda-FF9900?logo=amazonaws&logoColor=white)](https://aws.amazon.com/lambda/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![Power BI](https://img.shields.io/badge/Microsoft-Power_BI-F2C811?logo=powerbi&logoColor=black)](https://powerbi.microsoft.com/)
+[![License](https://img.shields.io/badge/License-UNLICENSED-lightgrey)]()
+
+Monorepo **moderno multi-app** orientado por **[Nx](https://nx.dev/)** com **`insights.web`** (Next.js 13, React 18, Redux Toolkit, Tailwind, embed **Power BI** no cliente, TypeScript) e **`insights.api`** (Serverless Framework 3, **AWS Lambda** em TypeScript, **MongoDB** com Mongoose). O produto é uma **plataforma SaaS multi-tenant** de BI white-label com relatórios **Microsoft Power BI** incorporados na web, gestão de clientes, departamentos e utilizadores, e integrações **Azure AD** para tokens de serviço / utilizador junto da API do Power BI.
 
 Em **produção**, o runtime típico é **API Gateway + Lambda** na AWS; em **desenvolvimento local**, **Docker Compose** na raiz sobe MongoDB, a API em **Serverless Offline** e o Next.js, para fluxos próximos do ambiente real sem publicar na nuvem.
 
