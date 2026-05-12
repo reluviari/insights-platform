@@ -1,10 +1,125 @@
 # Insights.api
 
-API serverless (AWS Lambda) em TypeScript, com emulação local via **Serverless Offline**.
+API Serverless da Insights Platform. Expõe autenticação, administração multi-tenant, relatórios e integração com Power BI.
 
-## Arquitetura
+Em produção, os handlers são empacotados para **AWS Lambda** via Serverless Framework. Em desenvolvimento local, a API roda com **Serverless Offline**.
 
-Cada rota em `serverless.yml` vira um **handler** empacotado em Lambda. O **API Gateway** (ou o plugin **serverless-offline** no seu laptop) encaminha o HTTP para essa função. Vários módulos também chamam **MongoDB**, e o fluxo de **embed** usa **Azure AD** + **Power BI REST** conforme integrações em `src/modules/embed-token/providers/integrations/`.
+---
+
+## O que esta API faz
+
+| Domínio | Responsabilidade |
+|---------|------------------|
+| Auth | Login, JWT, validação de token e fluxo de senha. |
+| Tenant | Identificação e isolamento por tenant. |
+| Customer | Gestão de clientes. |
+| User | Gestão de usuários e vínculos. |
+| Department | Gestão de departamentos e permissões. |
+| Report | Gestão de relatórios, páginas e associações. |
+| Embed token | Validação de acesso e emissão de dados para Power BI embed. |
+| Target filters | Filtros e segmentações associadas aos relatórios. |
+| Health check | Verificação operacional da API. |
+
+---
+
+## Como rodar
+
+### Caminho recomendado: stack completa da raiz
+
+Para subir MongoDB, API e Web juntos:
+
+```bash
+cd ..
+cp .env.docker.example .env
+docker compose up --build
+```
+
+Detalhes: [README da raiz](../README.md#como-rodar-localmente) e [docs/LOCAL_DEVELOPMENT.md](../docs/LOCAL_DEVELOPMENT.md).
+
+### Só API + Mongo
+
+Na pasta `insights.api`:
+
+```bash
+docker compose up -d
+npm install
+npm run dev
+```
+
+| Serviço | URL |
+|---------|-----|
+| API Serverless Offline | [http://localhost:4001](http://localhost:4001) |
+| Health check | `GET http://localhost:4001/api/health-check` |
+| MongoDB local | `mongodb://127.0.0.1:27017/qa-pbi` |
+
+As rotas seguem o prefixo `/api`.
+
+---
+
+## Login em desenvolvimento
+
+Com seed local aplicado:
+
+| Persona | E-mail | Senha |
+|---------|--------|-------|
+| Administrador | `admin@example.com` | `DevPass123!` |
+| Usuário final | `dev@example.com` | `DevPass123!` |
+
+Teste via API:
+
+```bash
+curl -sS -X POST http://localhost:4001/api/auth/sign-in \
+  -H "Content-Type: application/json" \
+  -H "Origin: http://localhost:3000" \
+  -d '{"email":"admin@example.com","password":"DevPass123!"}'
+```
+
+O `Origin` é importante porque a API usa esse valor como referência para localizar o tenant. Detalhes: [docs/AUTH_AND_TENANCY.md](../docs/AUTH_AND_TENANCY.md).
+
+---
+
+## Variáveis de ambiente
+
+A configuração padrão do stage local está em [config/local.yml](./config/local.yml). Variáveis podem sobrescrever valores conforme ambiente.
+
+| Variável / grupo | Uso |
+|------------------|-----|
+| `MONGODB_URI` | Conexão MongoDB. |
+| `SECRET_TOKEN` | Assinatura JWT. |
+| `SECRET_TOKEN_EXPIRE` | Expiração do JWT. |
+| `AZURE_*` | Integração Azure AD / Power BI. |
+| `KEYCLOAK_URL` | Deve ficar vazio no fluxo atual sem SSO. |
+
+Para Docker na raiz, use `.env` criado a partir de [../.env.docker.example](../.env.docker.example).
+
+---
+
+## Endpoints principais
+
+| Método | Rota | Auth típica | Descrição |
+|--------|------|-------------|-----------|
+| GET | `/api/health-check` | Não | Health check. |
+| POST | `/api/auth/sign-in` | Não | Login com e-mail e senha. |
+| POST | `/api/auth/send-define-password` | Não | Solicita definição / redefinição de senha. |
+| POST | `/api/auth/define-password` | Não | Define senha via token. |
+| POST | `/api/auth/validate-token` | Varia | Valida JWT. |
+| Várias | `/api/customer/...` | Sim | Clientes. |
+| Várias | `/api/user/...` | Sim | Usuários. |
+| Várias | `/api/department/...` | Sim | Departamentos. |
+| Várias | `/api/reports/...` | Sim | Relatórios, páginas e sincronização. |
+| Várias | `/api/embed-token/...` | Sim | Dados para embed Power BI. |
+| Várias | `/api/target-filter/...` | Sim | Filtros de destino. |
+
+A lista completa está em:
+
+- [serverless.yml](./serverless.yml)
+- `src/modules/**/functions/*.yml`
+
+---
+
+## Arquitetura da API
+
+Cada rota declarada no Serverless vira um handler Lambda. Localmente, o Serverless Offline expõe as mesmas rotas por HTTP.
 
 ```mermaid
 graph LR
@@ -14,137 +129,110 @@ graph LR
         Routes["Rotas /api/..."]
     end
 
-    subgraph Domain["Handlers Lambda por domínio"]
-        AuthDomain["auth\nJWT, Keycloak"]
-        EmbedDomain["embed-token\nAzure + GenerateToken"]
-        ReportDomain["report\ncustomer, user,\ndepartment, filtros, ..."]
+    subgraph Domain["Handlers por domínio"]
+        Auth["auth\nJWT"]
+        Admin["customer / user /\ndepartment / report"]
+        Embed["embed-token\nPower BI"]
     end
 
-    MongoDb[("MongoDB")]
-    KeycloakSrv["Keycloak"]
-    AzureAd["Azure AD"]
-    PowerBiRest["Power BI API\napi.powerbi.com"]
+    Mongo[("MongoDB")]
+    Azure["Azure AD"]
+    PBI["Power BI REST"]
 
     Client --> Routes
-    Routes --> AuthDomain
-    Routes --> EmbedDomain
-    Routes --> ReportDomain
-
-    AuthDomain --> MongoDb
-    AuthDomain --> KeycloakSrv
-
-    EmbedDomain --> MongoDb
-    EmbedDomain --> AzureAd
-    EmbedDomain --> PowerBiRest
-
-    ReportDomain --> MongoDb
-    ReportDomain --> PowerBiRest
+    Routes --> Auth
+    Routes --> Admin
+    Routes --> Embed
+    Auth --> Mongo
+    Admin --> Mongo
+    Embed --> Mongo
+    Embed --> Azure
+    Embed --> PBI
 ```
 
-### Sequência — embed token (trecho do domínio embed-token)
+Arquitetura detalhada: [docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md).
 
-```mermaid
-sequenceDiagram
-    participant Client as Cliente_HTTP
-    participant Lambda as Handler_embed_token
-    participant Azure as Azure_AD
-    participant PBI as PowerBI_REST
+---
 
-    Client->>Lambda: Pedido de token de embed
-    Lambda->>Azure: POST oauth2/token
-    Azure-->>Lambda: access_token
-    Lambda->>PBI: POST reports/GenerateToken
-    PBI-->>Lambda: token
-    Lambda-->>Client: JSON com token de embed
-```
+## Power BI e Azure
 
-## Stack
+Tokens de embed e chamadas à API do Power BI exigem credenciais reais no Azure AD. Sem isso, a API sobe normalmente, mas fluxos de embed e sincronização real podem falhar.
 
-| Lib / ferramenta | Uso |
-|------------------|-----|
-| Serverless Framework 3 | Deploy Lambda + API Gateway |
-| Node.js 16.x | Runtime AWS |
-| TypeScript | Linguagem |
-| MongoDB + Mongoose | Persistência |
-| Middy | Middleware HTTP nas Lambdas |
-| Axios | Cliente Azure AD / Power BI |
-| class-validator / class-transformer | Validação e DTOs |
-| Jest | Testes |
-| serverless-offline | Emula API + Lambdas no dev |
+Resumo do fluxo:
 
-## Como rodar
+1. Front pede dados de embed.
+2. API valida usuário, tenant e relatório.
+3. API obtém token no Azure AD.
+4. API chama Power BI REST.
+5. API devolve dados para o front renderizar.
 
-### Pré-requisitos
+Detalhes: [docs/POWER_BI.md](../docs/POWER_BI.md).
 
-- Node.js 16+
-- MongoDB (local ou Docker — veja abaixo)
+---
 
-### Caminho recomendado: stack na raiz do monorepo
+## Servidor Fastify alternativo
 
-Subir **Mongo + API + Web** com um único comando está documentado no [README da raiz](../README.md#como-rodar) (`docker compose` na pasta `insights-platform`).
-
-### Só a API + Mongo (sem Docker Compose da raiz)
-
-1. Suba o Mongo, por exemplo com [docker-compose.yml](./docker-compose.yml) nesta pasta:
-   ```bash
-   docker compose up -d
-   ```
-   Conexão típica na sua máquina: `mongodb://127.0.0.1:27017/qa-pbi` (ajuste o nome do banco se precisar).
-
-2. Confira `MONGODB_URI` em [config/local.yml](./config/local.yml). Você pode exportar `MONGODB_URI` no terminal para sobrescrever o valor do arquivo (útil com Docker ou outro host).
-
-3. Instale e inicie o **serverless-offline** (API em **http://localhost:4001**):
-   ```bash
-   npm install
-   npm run dev
-   ```
-
-Rotas HTTP seguem o prefixo `/api/...` (ex.: validação de token em `POST /api/auth/validate-token`).
-
-### Script alternativo `dev:local` (Fastify, porta 45000)
-
-Para um servidor Fastify mínimo (algumas rotas de auth mapeadas), use:
+Para um servidor local mínimo com algumas rotas mapeadas:
 
 ```bash
 npm run dev:local
 ```
 
-- Base: **http://localhost:45000**
-- Documentação em texto: **GET** `http://localhost:45000/doc`
+| Item | Valor |
+|------|-------|
+| Base URL | `http://localhost:45000` |
+| Documentação em texto | `GET http://localhost:45000/doc` |
 
-### Testar invocação “estilo Lambda” no modo Fastify
+Esse modo é alternativo ao Serverless Offline e cobre apenas o que está registrado em [server.ts](./server.ts).
 
-Com `npm run dev:local` rodando, envie um **POST** para `http://localhost:45000/lambda` com um corpo no formato do evento API Gateway. O campo `path` deve ser **exatamente** um dos caminhos registrados em [server.ts](./server.ts) (sem prefixo `/api`), por exemplo:
+---
 
-```json
-{
-  "path": "/auth/validate-token",
-  "httpMethod": "POST",
-  "pathParameters": {},
-  "queryStringParameters": {},
-  "headers": {},
-  "body": "{}"
-}
-```
-
-Ajuste `body` conforme a rota (string JSON ou objeto serializado, conforme o handler espera).
-
-### Variáveis de ambiente (local)
-
-A configuração padrão do stage `local` está em [config/local.yml](./config/local.yml). Várias chaves aceitam override por variável de ambiente (ex.: `MONGODB_URI`, `KEYCLOAK_URL`, credenciais **Azure** para Power BI). Para desenvolvimento dentro do Docker da raiz do repositório, use o arquivo `.env` descrito em [.env.docker.example](../.env.docker.example).
-
-**Seed Mongo (dev):** com Docker na raiz, o **`mongo-seed`** e o initdb aplicam tenant, customer e utilizadores **`dev@example.com`** (USER) e **`admin@example.com`** (ADMIN). Ver [README da raiz](../README.md#como-rodar). **Keycloak não está em uso** no dia a dia. Login local: **[Credenciais](../README.md#credenciais-padrão-e-como-fazer-login-desenvolvimento-local)**.
-
-### Power BI e Azure
-
-Tokens de embed e chamadas à API do Power BI exigem credenciais reais no Azure AD. Sem isso a aplicação sobe, mas fluxos de embed/sincronização podem falhar — isso é esperado.
-
-## Testes
+## Testes e qualidade
 
 ```bash
 npm test
 npm run test-coverage
 npm run lint
+npm run build
 ```
 
-Detalhes de cenários: expandir suites em `src/**` conforme evolução do projeto.
+Notas:
+
+- Jest roda os testes em `src/**` e testes TypeScript relevantes.
+- `npm run build` executa `tsc`.
+- Testes de integração com Azure / Power BI real dependem de credenciais externas e ambiente configurado.
+
+---
+
+## Estrutura principal
+
+```text
+insights.api/
+├── config/                 # Configuração por stage
+├── src/
+│   ├── commons/            # Tipos e utilitários compartilhados
+│   ├── modules/
+│   │   ├── auth/
+│   │   ├── customer/
+│   │   ├── department/
+│   │   ├── embed-token/
+│   │   ├── report/
+│   │   ├── target-filter/
+│   │   ├── tenant/
+│   │   └── user/
+│   └── utils/
+├── serverless.yml
+├── server.ts               # Modo Fastify alternativo
+├── jest.config.ts
+└── project.json            # Targets Nx
+```
+
+---
+
+## Links relacionados
+
+- [README raiz](../README.md)
+- [Desenvolvimento local](../docs/LOCAL_DEVELOPMENT.md)
+- [Autenticação e tenancy](../docs/AUTH_AND_TENANCY.md)
+- [Power BI](../docs/POWER_BI.md)
+- [Arquitetura](../docs/ARCHITECTURE.md)

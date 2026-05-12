@@ -43,6 +43,6 @@ Quem não configurar continua a poder commitar; o IDE pode voltar a acrescentar 
 
 - Não commitar `.env` com segredos reais.
 - `package-lock.json` na raiz e locks dos apps conforme política do time.
-- CI: workflows em [`.github/workflows/`](../.github/workflows/) com filtros por `insights.api/**` e `insights.web/**` quando fizer sentido.
+- CI: quando workflows forem versionados na raiz, usar filtros por `insights.api/**` e `insights.web/**` quando fizer sentido.
 
 Para fluxo de trabalho com IA: [ai-workflow.md](./ai-workflow.md).

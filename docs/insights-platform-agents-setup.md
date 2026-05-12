@@ -176,7 +176,7 @@ Do not redesign the whole repo structure without explicit approval.
 ### Quando usar
 - nx.json, project.json, package.json raiz, workspaces
 - Docker, variáveis de ambiente, Keycloak doc
-- workflows em .github/workflows
+- estratégia de CI/CD e workflows quando forem versionados
 - revisão de instruções “como rodar”
 
 ---

@@ -151,7 +151,7 @@ _Use esta seção para datas ou épico. Exemplos de linhas (editar / remover):_
 
 | Épico | Status | Notas |
 |-------|--------|-------|
-| CI Nx com filtros front/back | Opcional | Ver `.github/workflows/` |
+| CI Nx com filtros front/back | Opcional | Criar workflows na raiz quando a estratégia de CI for ativada |
 | Testes E2E no front | Backlog | Playwright ou similar |
 | Observabilidade (tracing) | Backlog | Além de health-check |
 

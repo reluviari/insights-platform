@@ -6,7 +6,7 @@ Quando no futuro existir essa fase, **Keycloak** será um IdP (**OpenID Connect*
 
 ---
 
-**Seed Mongo:** o script [`docker/mongo/seed-insights-keycloak-dev.js`](./mongo/seed-insights-keycloak-dev.js) monta-se em `/docker-entrypoint-initdb.d/` no serviço **Mongo** do Compose — corre na **primeira inicialização** do volume de dados (sem contentor `insights-mongo-seed`). Popula Mongo **sem Keycloak**; campos como `realmId` ficam para eventual SSO.
+**Seed Mongo:** o script [`docker/mongo/seed-insights-keycloak-dev.js`](./mongo/seed-insights-keycloak-dev.js) é usado de duas formas na stack local: (1) montado em `/docker-entrypoint-initdb.d/` no serviço **Mongo**, onde roda apenas na primeira inicialização de um volume vazio; e (2) executado pelo serviço one-shot **`mongo-seed`** em cada `docker compose up`, garantindo dados atualizados mesmo em volumes antigos. Popula Mongo **sem Keycloak**; campos como `realmId` ficam para eventual SSO.
 
 Para repetir o seed à mão:
 
