@@ -107,7 +107,7 @@ Tenant → Customers (clientes) → Departments → Users → Reports (Power BI)
 
 - **Segurança:** não versionar segredos; tokens e segredos apenas em variáveis de ambiente / cofre; logs sem PII/credenciais.
 - **Disponibilidade:** dependente de AWS, MongoDB e da disponibilidade do Power BI / Azure — comunicar dependências em materiais de operação.
-- **Manutenibilidade:** mudanças **mínimas e revisáveis**; front e back com limites claros (ver `.cursor/rules/architecture.mdc`).
+- **Manutenibilidade:** mudanças **mínimas e revisáveis**; front e back com limites claros (ver `CLAUDE.md`).
 - **Operação local:** Docker Compose na raiz + Nx para facilitar onboarding e CI com **filtros por app** quando aplicável.
 
 ---
@@ -141,7 +141,7 @@ Uma entrega é “dentro do escopo de produto” quando:
 2. **Não quebra** embed nem sync **sem motivo documentado** (mudanças em Azure/Power BI devem ser operacionalizáveis).
 3. Mantém **isolamento multi-tenant** nos dados expostos pela API.
 4. Atualiza **README / env de exemplo** quando o fluxo operacional mudar.
-5. Para trabalho assistido por IA: aderência a [ai-workflow.md](./ai-workflow.md) e a [`.cursor/rules/`](../.cursor/rules/).
+5. Para trabalho assistido por IA: aderência a [CLAUDE.md](../CLAUDE.md) e aos agentes em [`.claude/agents/`](../.claude/agents/).
 
 ---
 

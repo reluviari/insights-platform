@@ -321,7 +321,8 @@ insights-platform/
 │   ├── Dockerfile.dev
 │   ├── project.json
 │   └── src/
-├── .cursor/rules/
+├── .claude/agents/             # Agentes Claude Code
+├── .cursor/rules/              # Legado Cursor, se presente
 └── README.md
 ```
 
@@ -366,22 +367,24 @@ Estratégias como Prometheus centralizado, tracing distribuído e dashboards Clo
 
 ## Desenvolvimento assistido por IA
 
-Este repositório foi estruturado para trabalhar com assistentes de código como colaboradores disciplinados.
+Este repositório agora usa **Claude Code puro** como disciplina operacional de IA.
 
 | Documento | Quando usar |
 |-----------|-------------|
+| [CLAUDE.md](CLAUDE.md) | Fonte operacional principal para Claude Code: regras, fluxo, segurança, arquitetura e validação. |
+| [.claude/agents/](.claude/agents/) | Agentes especializados para planejamento, backend, frontend, DevOps, testes, segurança, Power BI e revisão de escopo. |
 | [docs/PRODUCT_SCOPE.md](docs/PRODUCT_SCOPE.md) | Produto, tenants, Power BI e critérios de aceite. |
-| [docs/ai-workflow.md](docs/ai-workflow.md) | Disciplina de fases com IA. |
-| [docs/insights-platform-agents-setup.md](docs/insights-platform-agents-setup.md) | Papéis dos agentes / subagentes. |
 | [docs/git-github.md](docs/git-github.md) | Git monorepo, hooks e convenções. |
-| `.cursor/rules/` | Regras persistentes para assistentes de código. |
+| [docs/archive/](docs/archive/) | Histórico da disciplina antiga de IA/Cursor. Não é fonte operacional atual. |
 
 Fluxo recomendado:
 
-1. Planejar antes de implementar mudanças grandes.
-2. Dividir tarefas por papel quando houver front, back, infra e revisão.
-3. Usar regras persistentes do repositório.
-4. Revisar contra escopo, segurança e contratos REST antes de encerrar.
+1. Ler `CLAUDE.md` antes de mudanças relevantes.
+2. Usar `platform-orchestrator` para planejar fases maiores.
+3. Usar o agente especialista conforme área afetada: backend, frontend, workspace, Power BI, testes ou segurança.
+4. Fechar mudanças relevantes com `scope-reviewer`.
+
+Se `.cursor/rules/` ainda existir, trate como legado histórico. A fonte operacional principal agora é `CLAUDE.md` + `.claude/agents/`.
 
 ---
 

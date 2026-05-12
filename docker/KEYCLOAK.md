@@ -68,4 +68,4 @@ As rotas com **`Authorize()`** esperam JWT da API (login clássico), não o acce
 
 `KEYCLOAK_URL`, `KEYCLOAK_ADMIN`, `KEYCLOAK_ADMIN_PASSWORD`, `NEXT_PUBLIC_INSIGHTS_SSO_ENABLED` — [.env.docker.example](../.env.docker.example).
 
-IA: [docs/ai-workflow.md](../docs/ai-workflow.md).
+IA operacional: [CLAUDE.md](../CLAUDE.md).
