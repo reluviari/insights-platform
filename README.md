@@ -1,17 +1,5 @@
 # Insights Platform
 
-[![Nx](https://img.shields.io/badge/Nx-Monorepo-143055?logo=nx&logoColor=white)](https://nx.dev/)
-[![Next.js](https://img.shields.io/badge/Next.js-13-000000?logo=next.js&logoColor=white)](https://nextjs.org/)
-[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)](https://react.dev/)
-[![Redux Toolkit](https://img.shields.io/badge/Redux_Toolkit-764ABC?logo=redux&logoColor=white)](https://redux-toolkit.js.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![Serverless](https://img.shields.io/badge/Serverless-Framework_3-FD5750?logo=serverless&logoColor=white)](https://www.serverless.com/)
-[![AWS Lambda](https://img.shields.io/badge/AWS-Lambda-FF9900?logo=amazonaws&logoColor=white)](https://aws.amazon.com/lambda/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
-[![Power BI](https://img.shields.io/badge/Microsoft-Power_BI-F2C811?logo=powerbi&logoColor=black)](https://powerbi.microsoft.com/)
-[![License](https://img.shields.io/badge/License-UNLICENSED-lightgrey)]()
-
 Plataforma SaaS white-label para disponibilizar relatórios **Microsoft Power BI** em um portal web com controle por tenant, clientes, departamentos, usuários e permissões.
 
 Tecnicamente, é um monorepo **Nx** com:
