@@ -11,14 +11,18 @@ export class CreateDepartmentUseCase {
     private customerRepository: ICustomerRepository,
   ) {}
 
-  async execute(customerId: string, data: CreateDepartmentType): Promise<Department> {
+  async execute(
+    tenantId: string,
+    customerId: string,
+    data: CreateDepartmentType,
+  ): Promise<Department> {
     const department = await this.departmentRepository.findByTitle(data?.title, customerId);
 
     if (department) {
       throw new ResponseError(ExceptionsConstants.DEPARTMENT_ALREADY_EXIST, HttpStatus.BAD_REQUEST);
     }
 
-    const customer = await this.customerRepository.findById(customerId);
+    const customer = await this.customerRepository.findByIdAndTenantId(customerId, tenantId);
 
     if (!customer) {
       throw new ResponseError(ExceptionsConstants.CUSTOMER_NOT_FOUND, HttpStatus.NOT_FOUND);

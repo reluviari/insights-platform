@@ -20,16 +20,20 @@ export class CustomerService implements ICustomerService {
     return this.getCustomersByIdUseCase.execute(urlSlug, customerId);
   }
 
-  async update(customerId: string, data: UpdateCustomerDto): Promise<Customer> {
-    return this.updateCustomerUseCase.execute(customerId, data);
+  async update(tenantId: string, customerId: string, data: UpdateCustomerDto): Promise<Customer> {
+    return this.updateCustomerUseCase.execute(tenantId, customerId, data);
   }
 
   async create(urlSlug: string, data: CreateCustomerDto): Promise<Customer> {
     return this.createCustomerUseCase.execute(urlSlug, data);
   }
 
-  async attachReportsToCustomer(customerId: string, reportId: string): Promise<Customer> {
-    return this.attachReportsToCustomerUseCase.execute(customerId, reportId);
+  async attachReportsToCustomer(
+    tenantId: string,
+    customerId: string,
+    reportId: string,
+  ): Promise<Customer> {
+    return this.attachReportsToCustomerUseCase.execute(tenantId, customerId, reportId);
   }
 
   async getCustomerByTenantSlug(

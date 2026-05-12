@@ -70,8 +70,9 @@ export class CustomerController {
   public async update(
     @Body(UpdateCustomerDto) body: UpdateCustomerDto,
     @Params(CustomerParamsDto) { customerId }: CustomerParamsDto,
+    @User { tenantId }: SessionUser,
   ): Promise<GetCustomerDto> {
-    const customer = await this.customerService.update(customerId, body);
+    const customer = await this.customerService.update(tenantId, customerId, body);
 
     return GetCustomerDto.factory(GetCustomerDto, customer);
   }
@@ -82,8 +83,13 @@ export class CustomerController {
   @Method()
   public async attachReportsToCustomer(
     @Params(CustomerParamsDto) { customerId, reportId }: CustomerParamsDto,
+    @User { tenantId }: SessionUser,
   ): Promise<GetCustomerDto> {
-    const customer = await this.customerService.attachReportsToCustomer(customerId, reportId);
+    const customer = await this.customerService.attachReportsToCustomer(
+      tenantId,
+      customerId,
+      reportId,
+    );
 
     return GetCustomerDto.factory(GetCustomerDto, customer);
   }

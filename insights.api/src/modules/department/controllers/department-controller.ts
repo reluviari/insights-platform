@@ -35,8 +35,13 @@ export class DepartmentController {
   @Method()
   public async getDepartmentdetails(
     @Params(DepartmentParamsDto) { customerId, departmentId }: DepartmentParamsDto,
+    @User { tenantId }: SessionUser,
   ): Promise<GetDepartmentDetailsDto> {
-    const department = await this.departmentService.getDepartmentById(customerId, departmentId);
+    const department = await this.departmentService.getDepartmentById(
+      tenantId,
+      customerId,
+      departmentId,
+    );
     return GetDepartmentDetailsDto.factory(GetDepartmentDetailsDto, department);
   }
 
@@ -47,8 +52,9 @@ export class DepartmentController {
   public async create(
     @Body(CreateDepartmentDto) body: CreateDepartmentDto,
     @Params(DepartmentParamsDto) { customerId }: DepartmentParamsDto,
+    @User { tenantId }: SessionUser,
   ): Promise<GetDepartmentDetailsDto> {
-    const createReport = await this.departmentService.create(customerId, body);
+    const createReport = await this.departmentService.create(tenantId, customerId, body);
     return GetDepartmentDetailsDto.factory(GetDepartmentDetailsDto, createReport);
   }
 
@@ -57,9 +63,10 @@ export class DepartmentController {
   @JwtRoles([Roles.ADMIN])
   @Method()
   public async delete(
-    @Params(DepartmentParamsDto) { departmentId }: DepartmentParamsDto,
+    @Params(DepartmentParamsDto) { customerId, departmentId }: DepartmentParamsDto,
+    @User { tenantId }: SessionUser,
   ): Promise<void> {
-    await this.departmentService.delete(departmentId);
+    await this.departmentService.delete(tenantId, customerId, departmentId);
   }
 
   @ConnectMongoDB()
@@ -68,9 +75,16 @@ export class DepartmentController {
   @Method()
   public async updateReportPage(
     @Body() body: ReportPageDto,
-    @Params(DepartmentParamsDto) { customerId, departmentId, reportId }: ReportPageParamsDto,
+    @Params(ReportPageParamsDto) { customerId, departmentId, reportId }: ReportPageParamsDto,
+    @User { tenantId }: SessionUser,
   ): Promise<void> {
-    await this.departmentService.updateReportPage(customerId, departmentId, reportId, body);
+    await this.departmentService.updateReportPage(
+      tenantId,
+      customerId,
+      departmentId,
+      reportId,
+      body,
+    );
   }
 
   @ConnectMongoDB()
@@ -116,7 +130,10 @@ const createDepartmentUseCase = new CreateDepartmentUseCase(
   customerRepository,
 );
 
-const deleteDepartmentUseCase = new DeleteDepartmentUseCase(departmentRepository);
+const deleteDepartmentUseCase = new DeleteDepartmentUseCase(
+  departmentRepository,
+  customerRepository,
+);
 const updateReportPageUseCase = new UpdateReportPageUseCase(
   reportRepository,
   departmentRepository,

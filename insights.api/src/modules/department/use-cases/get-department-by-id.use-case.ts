@@ -12,10 +12,14 @@ export class GetDepartmentByIdUseCase {
     private customerRepository: ICustomerRepository,
   ) {}
 
-  async execute(customerId: string, departmentId: string): Promise<Department> {
+  async execute(tenantId: string, customerId: string, departmentId: string): Promise<Department> {
     const [customer, department] = await Promise.all([
-      this.customerRepository.findById(customerId),
-      this.departmentRepository.findById(departmentId, this.populateDepartment),
+      this.customerRepository.findByIdAndTenantId(customerId, tenantId),
+      this.departmentRepository.findByIdAndCustomerId(
+        departmentId,
+        customerId,
+        this.populateDepartment,
+      ),
     ]);
 
     if (!customer) {

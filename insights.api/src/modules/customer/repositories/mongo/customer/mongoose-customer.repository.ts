@@ -28,9 +28,33 @@ export class MongooseCustomerRepository implements ICustomerRepository {
     return customerDoc ? toCustomer(customerDoc.toObject()) : null;
   }
 
+  async updateByIdAndTenantId(
+    customerId: string,
+    tenantId: string,
+    data: UpdateCustomerDto,
+  ): Promise<Customer> {
+    const customerDoc = await this.handleErrors(
+      CustomerModel.findOneAndUpdate({ _id: customerId, tenant: tenantId }, { $set: data }),
+    );
+
+    return customerDoc ? toCustomer(customerDoc.toObject()) : null;
+  }
+
   async findById(customerId: string, populates?: PopulateOptions[]): Promise<Customer> {
     const customerDoc = await this.handleErrors(
       CustomerModel.findById(customerId).populate(populates).exec(),
+    );
+
+    return customerDoc ? toCustomer(customerDoc.toObject()) : null;
+  }
+
+  async findByIdAndTenantId(
+    customerId: string,
+    tenantId: string,
+    populates?: PopulateOptions[],
+  ): Promise<Customer> {
+    const customerDoc = await this.handleErrors(
+      CustomerModel.findOne({ _id: customerId, tenant: tenantId }).populate(populates).exec(),
     );
 
     return customerDoc ? toCustomer(customerDoc.toObject()) : null;

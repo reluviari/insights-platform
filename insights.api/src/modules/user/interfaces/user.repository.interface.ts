@@ -18,6 +18,11 @@ export interface IUserRepository {
     populates?: PopulateOptions[],
   ): Promise<User | null>;
   findUserById(id: string, populates?: PopulateOptions[]): Promise<User | null>;
+  findUserByIdAndTenantId(
+    id: string,
+    tenantId: string,
+    populates?: PopulateOptions[],
+  ): Promise<User | null>;
   update(filter: { id: string }, data: UpdateUser): Promise<User>;
   listUserByTenantId(
     where?: WhereUser,

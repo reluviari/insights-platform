@@ -56,9 +56,9 @@ export class ReportController {
   @Method()
   public async getReportDetailsById(
     @Params(ReportParamsDto) { reportId }: ReportParamsDto,
-    @User { urlSlug }: SessionUser,
+    @User { tenantId }: SessionUser,
   ): Promise<GetReportDetailsDto> {
-    const report = await this.reportService.getReportDetailsById(urlSlug, reportId);
+    const report = await this.reportService.getReportDetailsById(tenantId, reportId);
 
     return GetReportDetailsDto.factory(GetReportDetailsDto, report);
   }
@@ -69,8 +69,9 @@ export class ReportController {
   @Method()
   public async listReportDetailsByCustomerId(
     @Params(CustomerReportParamsDto) { customerId }: CustomerReportParamsDto,
+    @User { tenantId }: SessionUser,
   ): Promise<GetReportDetailsByCustomerDto> {
-    const reports = await this.reportService.getReportDetailsByCustomerId(customerId);
+    const reports = await this.reportService.getReportDetailsByCustomerId(tenantId, customerId);
 
     return GetReportDetailsByCustomerDto.factory(GetReportDetailsByCustomerDto, reports);
   }
@@ -81,20 +82,23 @@ export class ReportController {
   @Method()
   public async listReportPages(
     @Params(ReportParamsDto) { reportId }: ReportParamsDto,
+    @User { tenantId }: SessionUser,
   ): Promise<GetReportPageDto> {
-    const pages = await this.reportService.getReportPages(reportId);
+    const pages = await this.reportService.getReportPages(tenantId, reportId);
 
     return GetReportPageDto.factory(GetReportPageDto, pages);
   }
 
   @ConnectMongoDB()
   @Authorize()
+  @JwtRoles([Roles.ADMIN])
   @Method()
   public async update(
     @Body(UpdateReportRequestDto) body: UpdateReportRequestDto,
     @Params(ReportParamsDto) { reportId }: ReportParamsDto,
+    @User { tenantId }: SessionUser,
   ): Promise<UpdateReportResponseDto> {
-    const updatedReport = await this.reportService.update(reportId, body);
+    const updatedReport = await this.reportService.update(tenantId, reportId, body);
 
     return UpdateReportResponseDto.factory(UpdateReportResponseDto, {
       data: updatedReport,
@@ -103,12 +107,14 @@ export class ReportController {
 
   @ConnectMongoDB()
   @Authorize()
+  @JwtRoles([Roles.ADMIN])
   @Method()
   public async updateByCustomer(
     @Body(UpdateReportCustomerRequestDto) body: UpdateReportCustomerRequestDto,
     @Params(ReportParamsDto) { reportId, customerId, departmentId }: ReportParamsDto,
+    @User { tenantId }: SessionUser,
   ): Promise<void> {
-    return this.reportService.updateByCustomer(customerId, departmentId, reportId, body);
+    return this.reportService.updateByCustomer(tenantId, customerId, departmentId, reportId, body);
   }
 
   @ConnectMongoDB()
@@ -138,8 +144,9 @@ export class ReportController {
   public async attachReportToDepartments(
     @Params(ReportParamsDto) { reportId, customerId }: ReportParamsDto,
     @Body(AttachReportToDepartmentsDto) data: AttachReportToDepartmentsDto,
+    @User { tenantId }: SessionUser,
   ) {
-    return this.reportService.attachReportToDepartments(customerId, reportId, data);
+    return this.reportService.attachReportToDepartments(tenantId, customerId, reportId, data);
   }
 }
 
@@ -175,7 +182,6 @@ const getReportDetailsByCustomerIdUseCase = new GetReportDetailsByCustomerIdUseC
 const getReportDetailsByIdUseCase = new GetReportDetailsByIdUseCase(
   reportRepository,
   reportFilterRepository,
-  tenantRepository,
 );
 
 const getReportPagesUseCase = new GetReportPagesUseCase(reportRepository, reportIntegration);

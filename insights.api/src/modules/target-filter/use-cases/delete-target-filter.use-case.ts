@@ -9,27 +9,30 @@ export class DeleteTargetFilterUseCase {
     private reportRepository: IReportRepository,
   ) {}
 
-  async execute(reportId: string, targetFilterId: string): Promise<void> {
-    await this.checkReportExists(reportId);
-    const targetFilter = await this.findTargetFilterById(targetFilterId);
+  async execute(tenantId: string, reportId: string, targetFilterId: string): Promise<void> {
+    await this.checkReportExists(tenantId, reportId);
+    const targetFilter = await this.findTargetFilterById(reportId, targetFilterId);
 
     if (!targetFilter) {
       throw new ResponseError(ExceptionsConstants.TARGET_NOT_FOUND, HttpStatus.NOT_FOUND);
     }
 
-    return this.deleteTargetFilterById(targetFilterId);
+    return this.deleteTargetFilterById(reportId, targetFilterId);
   }
 
-  private async checkReportExists(reportId: string) {
-    const report = await this.reportRepository.findById(reportId);
+  private async checkReportExists(tenantId: string, reportId: string) {
+    const report = await this.reportRepository.findByIdAndTenantId(reportId, tenantId);
 
     if (!report) {
       throw new ResponseError(ExceptionsConstants.REPORT_NOT_FOUND, HttpStatus.BAD_REQUEST);
     }
   }
 
-  private async findTargetFilterById(targetFilterId: string) {
-    const targetFilter = await this.targetFilterRepository.findById(targetFilterId);
+  private async findTargetFilterById(reportId: string, targetFilterId: string) {
+    const targetFilter = await this.targetFilterRepository.findByIdAndReportId(
+      targetFilterId,
+      reportId,
+    );
 
     if (!targetFilter) {
       throw new ResponseError(ExceptionsConstants.TARGET_NOT_FOUND, HttpStatus.BAD_REQUEST);
@@ -38,7 +41,7 @@ export class DeleteTargetFilterUseCase {
     return targetFilter;
   }
 
-  private async deleteTargetFilterById(targetFilterId: string) {
-    await this.targetFilterRepository.delete(targetFilterId);
+  private async deleteTargetFilterById(reportId: string, targetFilterId: string) {
+    await this.targetFilterRepository.deleteByIdAndReportId(targetFilterId, reportId);
   }
 }

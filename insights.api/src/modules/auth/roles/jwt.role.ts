@@ -21,6 +21,10 @@ export function JwtRoles(methodRoles: string[]) {
       try {
         const { user } = event;
 
+        if (!user?.tenantId) {
+          throw new ResponseError(ExceptionsConstants.UNAUTHORIZED, HttpStatus.UNAUTHORIZED);
+        }
+
         const hasAccess = verifyRole(user.roles, methodRoles);
 
         if (!hasAccess) {
@@ -40,6 +44,8 @@ const verifyRole = (userRoles: string[], methodRoles: string[]): boolean => {
   if (userRoles && Array.isArray(userRoles)) {
     return hasAccess(userRoles, methodRoles);
   }
+
+  return false;
 };
 
 const hasAccess = (userRoles: string[], methodRoles: string[]): boolean => {

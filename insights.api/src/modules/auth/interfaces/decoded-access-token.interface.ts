@@ -5,6 +5,7 @@ export interface DecodedAccessToken {
   name: string;
   email: string;
   urlSlug: string;
+  tenantId: string;
   roles: string[];
   scope: ScopeEnum[];
   iat: number;

@@ -18,9 +18,9 @@ export class EmbedTokenController {
   @Method()
   public async embedToken(
     @Body(EmbedTokenRequestDTO) body: EmbedTokenRequestDTO,
-    @User { id }: SessionUser,
+    @User user: SessionUser,
   ): Promise<EmbedTokenResponseDTO> {
-    const data = await this.tokenService.embedToken(id, body);
+    const data = await this.tokenService.embedToken(user, body);
 
     return EmbedTokenResponseDTO.factory(EmbedTokenResponseDTO, data);
   }

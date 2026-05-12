@@ -33,33 +33,40 @@ export class ReportService implements IReportService {
     return this.getUserReportByUserIdUseCase.execute(userId, urlSlug);
   }
 
-  async update(reportId: string, data: updateReportRequestType): Promise<Report> {
-    return this.updateReportUseCase.execute(reportId, data);
+  async update(tenantId: string, reportId: string, data: updateReportRequestType): Promise<Report> {
+    return this.updateReportUseCase.execute(tenantId, reportId, data);
   }
 
   updateByCustomer(
+    tenantId: string,
     customerId: string,
     departmentId: string,
     reportId: string,
     body: UpdateReportCustomerRequestDto,
   ) {
-    return this.updateReportByCustomerUseCase.execute(customerId, departmentId, reportId, body);
+    return this.updateReportByCustomerUseCase.execute(
+      tenantId,
+      customerId,
+      departmentId,
+      reportId,
+      body,
+    );
   }
 
   async getReportsByTenantSlug(urlSlug: string): Promise<Report[]> {
     return this.getReportByTenantSlugUseCase.execute(urlSlug);
   }
 
-  async getReportDetailsById(urlSlug: string, reportId: string): Promise<Report> {
-    return this.getReportDetailsByIdUseCase.execute(urlSlug, reportId);
+  async getReportDetailsById(tenantId: string, reportId: string): Promise<Report> {
+    return this.getReportDetailsByIdUseCase.execute(tenantId, reportId);
   }
 
-  async getReportDetailsByCustomerId(customerId: string): Promise<Report[]> {
-    return this.getReportDetailsByCustomerIdUseCase.execute(customerId);
+  async getReportDetailsByCustomerId(tenantId: string, customerId: string): Promise<Report[]> {
+    return this.getReportDetailsByCustomerIdUseCase.execute(tenantId, customerId);
   }
 
-  async getReportPages(reportId: string): Promise<ReportPage[]> {
-    return this.getReportPagesUseCase.execute(reportId);
+  async getReportPages(tenantId: string, reportId: string): Promise<ReportPage[]> {
+    return this.getReportPagesUseCase.execute(tenantId, reportId);
   }
 
   async synchronizeReports(urlSlug: string): Promise<SyncReportType | null> {
@@ -67,10 +74,11 @@ export class ReportService implements IReportService {
   }
 
   async attachReportToDepartments(
+    tenantId: string,
     customerId: string,
     reportId: string,
     data: AttachReportToDepartmentsDto,
   ): Promise<void> {
-    return this.attachReportToDepartmentsUseCase.execute(customerId, reportId, data);
+    return this.attachReportToDepartmentsUseCase.execute(tenantId, customerId, reportId, data);
   }
 }

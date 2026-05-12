@@ -10,10 +10,14 @@ export class ListTargetFilterUseCase {
     private reportRepository: IReportRepository,
   ) {}
 
-  async execute(reportId: string, filter: FilterTargetFilterDto): Promise<ListTargetFilter> {
+  async execute(
+    tenantId: string,
+    reportId: string,
+    filter: FilterTargetFilterDto,
+  ): Promise<ListTargetFilter> {
     const { page, pageSize, ...rest } = filter;
 
-    await this.checkReportExists(reportId);
+    await this.checkReportExists(tenantId, reportId);
 
     const [targetFilters, count] = await Promise.all([
       this.targetFilterRepository.listAll({ report: reportId, ...rest }, page, pageSize),
@@ -26,8 +30,8 @@ export class ListTargetFilterUseCase {
     };
   }
 
-  private async checkReportExists(reportId: string) {
-    const report = await this.reportRepository.findById(reportId);
+  private async checkReportExists(tenantId: string, reportId: string) {
+    const report = await this.reportRepository.findByIdAndTenantId(reportId, tenantId);
 
     if (!report) {
       throw new ResponseError(ExceptionsConstants.REPORT_NOT_FOUND, HttpStatus.BAD_REQUEST);

@@ -75,7 +75,7 @@ const synchronizeReportsUseCase = new SynchronizeReportsUseCase(
   reportRepository,
   reportIntegration,
 );
-const signInUseCase = new SignInUseCase(userRepository);
+const signInUseCase = new SignInUseCase(userRepository, tenantRepository);
 const keycloakSignInUseCase = new KeycloakSignInUseCase(userRepository, tenantRepository);
 const sendMailDefinePasswordUseCase = new SendMailDefinePasswordUseCase(userRepository);
 const definePasswordUseCase = new DefinePasswordUseCase(userRepository);

@@ -14,23 +14,32 @@ export class TargetFilterService implements ITargetFilterService {
     private deleteTargetFilterUseCase: DeleteTargetFilterUseCase,
   ) {}
 
-  async list(reportId: string, filter: FilterTargetFilterDto): Promise<ListTargetFilter> {
-    return this.listTargetFilterUseCase.execute(reportId, filter);
+  async list(
+    tenantId: string,
+    reportId: string,
+    filter: FilterTargetFilterDto,
+  ): Promise<ListTargetFilter> {
+    return this.listTargetFilterUseCase.execute(tenantId, reportId, filter);
   }
 
-  async create(reportId: string, body: CreateTargetFilterDto): Promise<TargetFilter> {
-    return this.createTargetFilterUseCase.execute(reportId, body);
+  async create(
+    tenantId: string,
+    reportId: string,
+    body: CreateTargetFilterDto,
+  ): Promise<TargetFilter> {
+    return this.createTargetFilterUseCase.execute(tenantId, reportId, body);
   }
 
   async update(
+    tenantId: string,
     reportId: string,
     targetFilterId: string,
     body: UpdateTargetFilterDto,
   ): Promise<TargetFilter> {
-    return this.updateTargetFilterUseCase.execute(reportId, targetFilterId, body);
+    return this.updateTargetFilterUseCase.execute(tenantId, reportId, targetFilterId, body);
   }
 
-  async delete(reportId: string, targetFilterId: string): Promise<void> {
-    await this.deleteTargetFilterUseCase.execute(reportId, targetFilterId);
+  async delete(tenantId: string, reportId: string, targetFilterId: string): Promise<void> {
+    await this.deleteTargetFilterUseCase.execute(tenantId, reportId, targetFilterId);
   }
 }

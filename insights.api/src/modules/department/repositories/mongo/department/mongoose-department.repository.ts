@@ -33,6 +33,14 @@ export class MongooseDepartmentRepository implements IDepartmentRepository {
     return departmentDoc;
   }
 
+  async deleteByIdAndCustomerId(id: string, customerId: string): Promise<Department | any> {
+    const departmentDoc = await this.handleErrors(
+      DepartmentModel.deleteOne({ _id: id, customer: customerId }),
+    );
+
+    return departmentDoc;
+  }
+
   async findByTitle(title: string, customerId: string): Promise<Department> {
     const departmentDoc = await this.handleErrors(
       DepartmentModel.findOne({ title, customer: customerId }),
@@ -43,6 +51,18 @@ export class MongooseDepartmentRepository implements IDepartmentRepository {
   async findById(id: string, populates?: PopulateOptions[]): Promise<Department | null> {
     const departmentDoc = await this.handleErrors(
       DepartmentModel.findById(id).populate(populates).exec(),
+    );
+
+    return departmentDoc ? toDepartment(departmentDoc.toObject()) : null;
+  }
+
+  async findByIdAndCustomerId(
+    id: string,
+    customerId: string,
+    populates?: PopulateOptions[],
+  ): Promise<Department | null> {
+    const departmentDoc = await this.handleErrors(
+      DepartmentModel.findOne({ _id: id, customer: customerId }).populate(populates).exec(),
     );
 
     return departmentDoc ? toDepartment(departmentDoc.toObject()) : null;
@@ -168,6 +188,20 @@ export class MongooseDepartmentRepository implements IDepartmentRepository {
     await this.handleErrors(
       DepartmentModel.updateOne(
         { "reportPages.reportId": reportId },
+        { $set: { "reportPages.$.pages": data } },
+      ),
+    );
+  }
+
+  async updatePagesByDepartmentCustomerAndReport(
+    departmentId: string,
+    customerId: string,
+    reportId: string,
+    data: ReportPageDto,
+  ): Promise<void> {
+    await this.handleErrors(
+      DepartmentModel.updateOne(
+        { _id: departmentId, customer: customerId, "reportPages.reportId": reportId },
         { $set: { "reportPages.$.pages": data } },
       ),
     );

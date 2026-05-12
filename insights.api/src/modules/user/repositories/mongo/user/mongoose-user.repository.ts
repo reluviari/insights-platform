@@ -103,6 +103,18 @@ export class MongooseUserRepository implements IUserRepository {
     return userDoc ? toUser(userDoc.toObject()) : null;
   }
 
+  async findUserByIdAndTenantId(
+    id: string,
+    tenantId: string,
+    populates?: PopulateOptions[],
+  ): Promise<User | null> {
+    const userDoc = await this.handleErrors(
+      UserModel.findOne({ _id: id, tenants: tenantId }).populate(populates).exec(),
+    );
+
+    return userDoc ? toUser(userDoc.toObject()) : null;
+  }
+
   async listUserByCustomerId(customerId: string, page?: number, limit?: number): Promise<User[]> {
     try {
       const pageNumber = page ? page - 1 : 0;

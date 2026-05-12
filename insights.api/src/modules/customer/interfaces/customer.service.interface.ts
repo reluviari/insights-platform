@@ -5,8 +5,12 @@ import { PaginatedCustomerByTenantId } from "./paginated-customer-by-tenant-id.i
 export interface ICustomerService {
   findById(urlSlug: string, customerId: string): Promise<Customer>;
   create(urlSlug: string, data: CreateCustomerDto): Promise<Customer>;
-  update(customerId: string, data: UpdateCustomerDto): Promise<Customer>;
-  attachReportsToCustomer(customerId: string, reportId: string): Promise<Customer>;
+  update(tenantId: string, customerId: string, data: UpdateCustomerDto): Promise<Customer>;
+  attachReportsToCustomer(
+    tenantId: string,
+    customerId: string,
+    reportId: string,
+  ): Promise<Customer>;
   getCustomerByTenantSlug(
     urlSlug: string,
     filter: FilterCustomerDto,

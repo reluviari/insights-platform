@@ -1,17 +1,19 @@
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import { SignInDto } from "../../dtos/sign-in.dto";
 import { SignInUseCase } from "@/modules/auth/use-cases/sign-in";
 import { HttpStatus } from "@foundation/lib";
 import { ExceptionsConstants } from "@/commons/consts/exceptions";
-import type { IUserRepository } from "@/modules/user/interfaces";
+import { IUserRepository } from "@/modules/user/interfaces";
+import { ITenantRepository } from "@/modules/tenant/interfaces/tenant.repository.interface";
 
 describe("SignInUseCase", () => {
   const passwordPlain = "DevPass123!";
+  const tenantId = "507f191e810c19729de860f1";
   let passwordHash: string;
 
-  let repo: jest.Mocked<
-    Pick<IUserRepository, "findUserByEmail" | "update">
-  >;
+  let repo: jest.Mocked<Pick<IUserRepository, "findUserByEmail" | "update">>;
+  let tenantRepository: jest.Mocked<Pick<ITenantRepository, "findBySlug">>;
 
   let useCase: SignInUseCase;
 
@@ -27,8 +29,22 @@ describe("SignInUseCase", () => {
       findUserByEmail: jest.fn(),
       update: jest.fn().mockResolvedValue({}),
     };
+    tenantRepository = {
+      findBySlug: jest.fn().mockResolvedValue({
+        _id: tenantId,
+        name: "Dev Tenant",
+        realmId: "dev",
+        urlSlug: "http://localhost:3000",
+        document: "123",
+        externalWorkspaceId: "workspace-id",
+        isActive: true,
+      }),
+    };
 
-    useCase = new SignInUseCase(repo as unknown as IUserRepository);
+    useCase = new SignInUseCase(
+      repo as unknown as IUserRepository,
+      tenantRepository as unknown as ITenantRepository,
+    );
   });
 
   it("devolve accessToken quando credenciais e slug são válidos", async () => {
@@ -41,6 +57,7 @@ describe("SignInUseCase", () => {
       password: passwordHash,
       status: true,
       phone: "",
+      tenants: [tenantId],
     });
 
     const result = await useCase.execute({
@@ -49,8 +66,13 @@ describe("SignInUseCase", () => {
       urlSlug: "http://localhost:3000",
     } as SignInDto);
 
+    const decoded = jwt.decode(result.accessToken) as { tenantId: string; urlSlug: string };
+
     expect(result.accessToken).toBeDefined();
     expect(typeof result.accessToken).toBe("string");
+    expect(decoded.tenantId).toBe(tenantId);
+    expect(decoded.urlSlug).toBe("http://localhost:3000");
+    expect(tenantRepository.findBySlug).toHaveBeenCalledWith("http://localhost:3000");
     expect(repo.findUserByEmail).toHaveBeenCalledWith("dev@example.com", undefined, true);
     expect(repo.update).toHaveBeenCalled();
   });
@@ -80,6 +102,7 @@ describe("SignInUseCase", () => {
       password: passwordHash,
       status: true,
       phone: "",
+      tenants: [tenantId],
     });
 
     await expect(
@@ -106,6 +129,21 @@ describe("SignInUseCase", () => {
     });
   });
 
+  it("400 quando Origin/urlSlug não resolve tenant", async () => {
+    tenantRepository.findBySlug.mockResolvedValue(null);
+
+    await expect(
+      useCase.execute({
+        email: "dev@example.com",
+        password: passwordPlain,
+        urlSlug: "http://localhost:3000",
+      } as SignInDto),
+    ).rejects.toMatchObject({
+      statusCode: HttpStatus.BAD_REQUEST,
+      message: ExceptionsConstants.TENANT_NOT_FOUND,
+    });
+  });
+
   it("400 quando utilizador inativo", async () => {
     repo.findUserByEmail.mockResolvedValue({
       _id: "507f191e810c19729de860e3",
@@ -116,6 +154,7 @@ describe("SignInUseCase", () => {
       password: passwordHash,
       status: true,
       phone: "",
+      tenants: [tenantId],
     });
 
     await expect(
@@ -128,6 +167,80 @@ describe("SignInUseCase", () => {
       statusCode: HttpStatus.BAD_REQUEST,
       message: ExceptionsConstants.INACTIVE_USER,
     });
+  });
+
+  it("401 quando usuário não pertence ao tenant do Origin", async () => {
+    repo.findUserByEmail.mockResolvedValue({
+      _id: "507f191e810c19729de860e3",
+      name: "Dev",
+      email: "dev@example.com",
+      roles: ["USER"],
+      isActive: true,
+      password: passwordHash,
+      status: true,
+      phone: "",
+      tenants: ["507f191e810c19729de860f2"],
+    });
+
+    await expect(
+      useCase.execute({
+        email: "dev@example.com",
+        password: passwordPlain,
+        urlSlug: "http://localhost:3000",
+      } as SignInDto),
+    ).rejects.toMatchObject({
+      statusCode: HttpStatus.UNAUTHORIZED,
+      message: ExceptionsConstants.UNAUTHORIZED,
+    });
+  });
+
+  it("401 quando usuário não tem tenants nem customer compatível", async () => {
+    repo.findUserByEmail.mockResolvedValue({
+      _id: "507f191e810c19729de860e3",
+      name: "Dev",
+      email: "dev@example.com",
+      roles: ["USER"],
+      isActive: true,
+      password: passwordHash,
+      status: true,
+      phone: "",
+    });
+
+    await expect(
+      useCase.execute({
+        email: "dev@example.com",
+        password: passwordPlain,
+        urlSlug: "http://localhost:3000",
+      } as SignInDto),
+    ).rejects.toMatchObject({ statusCode: HttpStatus.UNAUTHORIZED });
+  });
+
+  it("permite vínculo via customer.tenant quando tenants não está preenchido", async () => {
+    repo.findUserByEmail.mockResolvedValue({
+      _id: "507f191e810c19729de860e3",
+      name: "Dev",
+      email: "dev@example.com",
+      roles: ["USER"],
+      isActive: true,
+      password: passwordHash,
+      status: true,
+      phone: "",
+      customer: {
+        _id: "507f191e810c19729de860c1",
+        name: "Customer",
+        document: "123",
+        tenant: tenantId,
+        reports: [],
+      },
+    });
+
+    const result = await useCase.execute({
+      email: "dev@example.com",
+      password: passwordPlain,
+      urlSlug: "http://localhost:3000",
+    } as SignInDto);
+
+    expect(result.accessToken).toBeDefined();
   });
 
   it("401 quando email ou senha em falta", async () => {
@@ -158,6 +271,7 @@ describe("SignInUseCase", () => {
       password: passwordHash,
       status: true,
       phone: "",
+      tenants: [tenantId],
     });
 
     const result = await useCase.execute({

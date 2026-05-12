@@ -1,11 +1,15 @@
+import { ExceptionsConstants } from "@/commons/consts/exceptions";
+import { IDepartmentRepository } from "@/modules/department/interfaces";
+import { ReportPageType } from "@/modules/department/types";
+import { ReportFilter } from "@/modules/report-filter/entities";
+import { IReportRepository } from "@/modules/report/interfaces";
+import { Roles } from "@/modules/auth/roles/enums";
 import { IUserRepository } from "@/modules/user/interfaces";
+import { includesObjectId, objectIdToString, sameObjectId } from "@/utils/object-id";
+import { HttpStatus, ResponseError } from "@foundation/lib";
 import { ITokenIntegration } from "../interfaces";
 import { EmbedTokenInputType } from "../types/embed-token-input.type";
 import { EmbedTokenOutputType } from "../types/embed-token-output.type";
-import { IDepartmentRepository } from "@/modules/department/interfaces";
-import { ReportFilter } from "@/modules/report-filter/entities";
-import { IReportRepository } from "@/modules/report/interfaces";
-import { ReportPageType } from "@/modules/department/types";
 
 export class EmbedTokenUseCase {
   private readonly populateUses = [{ path: "reportFilters", populate: { path: "target" } }];
@@ -19,30 +23,66 @@ export class EmbedTokenUseCase {
   ) {}
 
   async execute(
-    userId: string,
+    sessionUser: { id: string; tenantId: string; roles?: string[] },
     { externalId, workspaceId }: EmbedTokenInputType,
   ): Promise<EmbedTokenOutputType> {
-    const [embedToken, user] = await Promise.all([
-      this.findEmbedToken({ externalId, workspaceId }),
-      this.findUser(userId),
-    ]);
+    const user = await this.findUser(sessionUser.id, sessionUser.tenantId);
+    const report = await this.findReport(externalId, sessionUser.tenantId);
 
-    const report = await this.findReport(externalId, user.tenants[0].toString());
-    const departments = user.departments as string[];
+    if (!report) {
+      throw new ResponseError(ExceptionsConstants.REPORT_NOT_FOUND, HttpStatus.NOT_FOUND);
+    }
+
+    this.validateReportAccess(sessionUser.roles ?? [], user, report._id);
+
+    const embedToken = await this.findEmbedToken({ externalId: report.externalId, workspaceId });
+    const departments = (user.departments as string[]) ?? [];
 
     if (departments.length) {
       const { departmentWithReportFilters, reportPages } = await this.findReportsFromDepartments(
         departments,
         report._id,
       );
-      const departmentReportFilters = departmentWithReportFilters.filter(
-        filter => filter.report === report._id,
+      const userReportFilters = this.filterReportFilters(
+        user.reportFilters as ReportFilter[],
+        report._id,
+      );
+      const departmentReportFilters = this.filterReportFilters(
+        departmentWithReportFilters,
+        report._id,
+      );
+      const combinedReportFilters = this.combineUniqueReportFilters(
+        userReportFilters,
+        departmentReportFilters,
       );
 
-      return { token: embedToken, reportFilters: departmentReportFilters, reportPages };
+      return {
+        token: embedToken,
+        reportFilters: combinedReportFilters,
+        reportPages: this.getUniqueReportPages(reportPages),
+      };
     }
 
-    return { token: embedToken, reportFilters: [] };
+    return {
+      token: embedToken,
+      reportFilters: this.filterReportFilters(user.reportFilters as ReportFilter[], report._id),
+    };
+  }
+
+  private validateReportAccess(roles: string[], user, reportId: string) {
+    if (roles.includes(Roles.ADMIN)) {
+      return;
+    }
+
+    if (includesObjectId(user.reports as unknown[], reportId)) {
+      return;
+    }
+
+    if ((user.departments as unknown[])?.length) {
+      return;
+    }
+
+    throw new ResponseError(ExceptionsConstants.UNAUTHORIZED, HttpStatus.UNAUTHORIZED);
   }
 
   private async findReportsFromDepartments(
@@ -54,42 +94,45 @@ export class EmbedTokenUseCase {
   }> {
     const departments = await Promise.all(departmentIds.map(id => this.findDepartment(id)));
 
-    const reportPages = departments.flatMap(department => department.reportPages);
-    const filterReportPages = reportPages.filter(f => f.reportId === reportId);
+    const reportPages = departments
+      .flatMap(department => department?.reportPages ?? [])
+      .filter(reportPage => sameObjectId(reportPage.reportId, reportId));
 
     const departmentWithReportFilters = departments.flatMap(
-      department => department.reportFilters as ReportFilter[],
+      department => (department?.reportFilters as ReportFilter[]) ?? [],
     );
 
-    return { reportPages: filterReportPages, departmentWithReportFilters };
+    return { reportPages, departmentWithReportFilters };
   }
 
   private async findEmbedToken(body: EmbedTokenInputType): Promise<string> {
     return this.tokenIntegration.getPBIEmbedToken(body);
   }
 
-  private async findUser(userId: string) {
-    return this.userRepository.findUserById(userId, this.populateUses);
+  private async findUser(userId: string, tenantId: string) {
+    const user = await this.userRepository.findUserByIdAndTenantId(
+      userId,
+      tenantId,
+      this.populateUses,
+    );
+
+    if (!user) {
+      throw new ResponseError(ExceptionsConstants.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
+    }
+
+    return user;
   }
 
   private async findReport(externalId: string, tenantId: string) {
-    return await this.reportRepository.findByExternalIdAndTenantId(externalId, tenantId);
+    return this.reportRepository.findByExternalIdAndTenantId(externalId, tenantId);
   }
 
   private async findDepartment(departmentId: string) {
     return this.departmentRepository.findById(departmentId, this.populateDepartment);
   }
 
-  private embedTokenWithReportFilters(
-    embedToken: string,
-    userReportFilters: ReportFilter[],
-    departmentReportFilters: ReportFilter[],
-  ): EmbedTokenOutputType {
-    const combinedReportFilters = this.combineUniqueReportFilters(
-      userReportFilters,
-      departmentReportFilters,
-    );
-    return { token: embedToken, reportFilters: combinedReportFilters };
+  private filterReportFilters(filters: ReportFilter[] = [], reportId: string): ReportFilter[] {
+    return filters.filter(filter => sameObjectId(filter.report, reportId));
   }
 
   private combineUniqueReportFilters(
@@ -97,15 +140,12 @@ export class EmbedTokenUseCase {
     departmentFilters: ReportFilter[],
   ): ReportFilter[] {
     const allFilters = [...userFilters, ...departmentFilters];
-    const uniqueFilters = this.getUniqueFilters(allFilters);
-    return uniqueFilters;
-  }
+    const ids = new Set<string>();
 
-  private getUniqueFilters(filters: ReportFilter[]): ReportFilter[] {
-    const ids = new Set();
-    return filters.filter(filter => {
-      const isUnique = !ids.has(filter._id);
-      if (isUnique) ids.add(filter._id);
+    return allFilters.filter(filter => {
+      const id = objectIdToString(filter._id);
+      const isUnique = Boolean(id && !ids.has(id));
+      if (isUnique) ids.add(id);
       return isUnique;
     });
   }

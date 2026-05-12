@@ -22,12 +22,12 @@ export class UserService implements IUserService {
     return this.listUserByTenantUrlSlugUseCase.execute(urlSlug, filter);
   }
 
-  async create(customerId: string, data: CreateUserDto): Promise<User> {
-    const user = await this.createUserUseCase.execute(customerId, data);
+  async create(tenantId: string, customerId: string, data: CreateUserDto): Promise<User> {
+    const user = await this.createUserUseCase.execute(tenantId, customerId, data);
 
     const passwordToken = generatePasswordToken(user._id, data?.email);
 
-    await this.updateUserUseCase.update(user._id, { passwordToken });
+    await this.updateUserUseCase.update(tenantId, user._id, { passwordToken });
 
     // const htmlTemplate = this.typeMailTemplate(user.name, passwordToken);
 
@@ -40,12 +40,12 @@ export class UserService implements IUserService {
     return user;
   }
 
-  findById(urlSlug: string, customerId: string, userId: string): Promise<User | null> {
-    return this.findByIdUseCase.execute(urlSlug, customerId, userId);
+  findById(tenantId: string, customerId: string, userId: string): Promise<User | null> {
+    return this.findByIdUseCase.execute(tenantId, customerId, userId);
   }
 
-  update(userId: string, data: UpdateUserDto): Promise<User> {
-    return this.updateUserUseCase.update(userId, data);
+  update(tenantId: string, userId: string, data: UpdateUserDto): Promise<User> {
+    return this.updateUserUseCase.update(tenantId, userId, data);
   }
 
   typeMailTemplate(name: string, token: string) {

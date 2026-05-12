@@ -9,8 +9,8 @@ export class GetReportPagesUseCase {
     private reportIntegration: IReportIntegration,
   ) {}
 
-  async execute(reportId: string): Promise<ReportPage[]> {
-    const report = await this.reportRepository.findById(reportId);
+  async execute(tenantId: string, reportId: string): Promise<ReportPage[]> {
+    const report = await this.reportRepository.findByIdAndTenantId(reportId, tenantId);
 
     if (!report) {
       throw new ResponseError(ExceptionsConstants.REPORT_NOT_FOUND, HttpStatus.NOT_FOUND);

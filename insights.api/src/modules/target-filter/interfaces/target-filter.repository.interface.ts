@@ -6,8 +6,15 @@ import { WhereTargetFilter } from "./where-target-filter.interface";
 export interface ITargetFilterRepository {
   create(data: CreateTargetFilter): Promise<TargetFilter | null>;
   update(targetFilterId: string, data: UpdateTargetFilter): Promise<TargetFilter | null>;
+  updateByIdAndReportId(
+    targetFilterId: string,
+    reportId: string,
+    data: UpdateTargetFilter,
+  ): Promise<TargetFilter | null>;
   findById(targetFilterId: string): Promise<TargetFilter | null>;
+  findByIdAndReportId(targetFilterId: string, reportId: string): Promise<TargetFilter | null>;
   delete(targetFilterId: string): Promise<void>;
+  deleteByIdAndReportId(targetFilterId: string, reportId: string): Promise<void>;
   findByReportIdAndColumnAndTableAndDisplayName(
     reportId: string,
     column: string,

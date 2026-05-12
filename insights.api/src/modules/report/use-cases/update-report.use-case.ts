@@ -6,14 +6,18 @@ import { updateReportRequestType } from "../types";
 export class UpdateReportUseCase {
   constructor(private updateReportRepository: IReportRepository) {}
 
-  async execute(reportId: string, data: updateReportRequestType) {
+  async execute(tenantId: string, reportId: string, data: updateReportRequestType) {
     const isObjectIdValid = Types.ObjectId.isValid(reportId);
 
     if (!isObjectIdValid) {
       throw new ResponseError(ExceptionsConstants.INVALID_OBJECT_ID, HttpStatus.BAD_REQUEST);
     }
 
-    const reportDoc = await this.updateReportRepository.update(reportId, data);
+    const reportDoc = await this.updateReportRepository.updateByIdAndTenantId(
+      reportId,
+      tenantId,
+      data,
+    );
 
     if (!reportDoc) {
       throw new ResponseError(ExceptionsConstants.REPORT_NOT_FOUND, HttpStatus.NOT_FOUND);

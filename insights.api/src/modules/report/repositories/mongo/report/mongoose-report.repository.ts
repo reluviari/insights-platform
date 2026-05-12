@@ -40,6 +40,17 @@ export class MongooseReportRepository implements IReportRepository {
     return reportDoc ? toReport(reportDoc.toObject()) : null;
   }
 
+  async findByIdAndTenantId(
+    id: string,
+    tenantId: string,
+    populates?: PopulateOptions[],
+  ): Promise<Report | null> {
+    const reportDoc = await this.handleErrors(
+      ReportModel.findOne({ _id: id, tenant: tenantId }).populate(populates).exec(),
+    );
+    return reportDoc ? toReport(reportDoc.toObject()) : null;
+  }
+
   async findByExternalId(externalId: string): Promise<Report | null> {
     const reportDoc = await this.handleErrors(ReportModel.findOne({ externalId }).exec());
     return reportDoc ? toReport(reportDoc.toObject()) : null;
@@ -48,6 +59,18 @@ export class MongooseReportRepository implements IReportRepository {
   async update(id: string, data: updateReportRequestType): Promise<Report | null> {
     const reportDoc = await this.handleErrors(
       ReportModel.findOneAndUpdate({ _id: id }, { $set: data }),
+    );
+
+    return reportDoc ? toReport(reportDoc.toObject()) : null;
+  }
+
+  async updateByIdAndTenantId(
+    id: string,
+    tenantId: string,
+    data: updateReportRequestType,
+  ): Promise<Report | null> {
+    const reportDoc = await this.handleErrors(
+      ReportModel.findOneAndUpdate({ _id: id, tenant: tenantId }, { $set: data }),
     );
 
     return reportDoc ? toReport(reportDoc.toObject()) : null;

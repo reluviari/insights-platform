@@ -18,6 +18,8 @@ import { CreateTargetFilterUseCase } from "../use-cases/create-target-filter.use
 import { UpdateTargetFilterUseCase } from "../use-cases/update-target-filter.use-case";
 import { DeleteTargetFilterUseCase } from "../use-cases/delete-target-filter.use-case";
 import { reportRepository } from "@/modules/report/repositories/mongo/report/report.repository";
+import { User } from "lib/foundation/methodDecorator";
+import { SessionUser } from "@/commons/interfaces";
 
 export class TargetFilterController {
   constructor(private targetFilterService: ITargetFilterService) {}
@@ -29,8 +31,9 @@ export class TargetFilterController {
   async create(
     @Body(CreateTargetFilterDto) body: CreateTargetFilterDto,
     @Params(TargetFilterParamsDto) { reportId }: TargetFilterParamsDto,
+    @User { tenantId }: SessionUser,
   ): Promise<GetTargetDto> {
-    const targetFilter = await this.targetFilterService.create(reportId, body);
+    const targetFilter = await this.targetFilterService.create(tenantId, reportId, body);
 
     return GetTargetDto.factory(GetTargetDto, targetFilter);
   }
@@ -42,8 +45,14 @@ export class TargetFilterController {
   async update(
     @Body(UpdateTargetFilterDto) body: UpdateTargetFilterDto,
     @Params(TargetFilterParamsDto) { reportId, targetFilterId }: TargetFilterParamsDto,
+    @User { tenantId }: SessionUser,
   ): Promise<GetTargetDto> {
-    const targetFilter = await this.targetFilterService.update(reportId, targetFilterId, body);
+    const targetFilter = await this.targetFilterService.update(
+      tenantId,
+      reportId,
+      targetFilterId,
+      body,
+    );
 
     return GetTargetDto.factory(GetTargetDto, targetFilter);
   }
@@ -55,11 +64,16 @@ export class TargetFilterController {
   public async list(
     @Query(FilterTargetFilterDto) filter: FilterTargetFilterDto,
     @Params(TargetFilterParamsDto) { reportId }: TargetFilterParamsDto,
+    @User { tenantId }: SessionUser,
   ): Promise<PaginatedResultsDto<GetTargetDto>> {
     const { page, pageSize } = filter;
     const pageNumber = Number(page ?? 0);
 
-    const { targetFilters, count } = await this.targetFilterService.list(reportId, filter);
+    const { targetFilters, count } = await this.targetFilterService.list(
+      tenantId,
+      reportId,
+      filter,
+    );
 
     return new PaginatedResultsDto<GetTargetDto>(
       GetTargetDto.factory(GetTargetDto, targetFilters),
@@ -75,8 +89,9 @@ export class TargetFilterController {
   @Method()
   async deleteTargetFilter(
     @Params(TargetFilterParamsDto) { reportId, targetFilterId }: TargetFilterParamsDto,
+    @User { tenantId }: SessionUser,
   ): Promise<void> {
-    await this.targetFilterService.delete(reportId, targetFilterId);
+    await this.targetFilterService.delete(tenantId, reportId, targetFilterId);
   }
 }
 

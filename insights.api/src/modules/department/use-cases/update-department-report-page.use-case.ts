@@ -13,36 +13,47 @@ export class UpdateReportPageUseCase {
   ) {}
 
   async execute(
+    tenantId: string,
     customerId: string,
     departmentId: string,
     reportId: string,
     body: ReportPageDto,
   ): Promise<void> {
-    this.checkCustomerExist(customerId);
-    this.checkDepartmentExist(departmentId);
-    this.checkReportExist(reportId);
+    await Promise.all([
+      this.checkCustomerExist(tenantId, customerId),
+      this.checkDepartmentExist(customerId, departmentId),
+      this.checkReportExist(tenantId, reportId),
+    ]);
 
-    await this.departmentRepository.updatePages(reportId, body);
+    await this.departmentRepository.updatePagesByDepartmentCustomerAndReport(
+      departmentId,
+      customerId,
+      reportId,
+      body,
+    );
   }
 
-  private async checkCustomerExist(customerId: string) {
-    const customer = await this.customerRepository.findById(customerId);
+  private async checkCustomerExist(tenantId: string, customerId: string) {
+    const customer = await this.customerRepository.findByIdAndTenantId(customerId, tenantId);
 
     if (!customer) {
       throw new ResponseError(ExceptionsConstants.CUSTOMER_NOT_FOUND, HttpStatus.NOT_FOUND);
     }
   }
 
-  private async checkDepartmentExist(departmentId: string) {
-    const department = await this.departmentRepository.findById(departmentId);
+  private async checkDepartmentExist(customerId: string, departmentId: string) {
+    const department = await this.departmentRepository.findByIdAndCustomerId(
+      departmentId,
+      customerId,
+    );
 
     if (!department) {
       throw new ResponseError(ExceptionsConstants.DEPARTMENT_NOT_FOUND, HttpStatus.NOT_FOUND);
     }
   }
 
-  private async checkReportExist(reportId: string) {
-    const report = await this.reportRepository.findById(reportId);
+  private async checkReportExist(tenantId: string, reportId: string) {
+    const report = await this.reportRepository.findByIdAndTenantId(reportId, tenantId);
 
     if (!report) {
       throw new ResponseError(ExceptionsConstants.REPORT_NOT_FOUND, HttpStatus.NOT_FOUND);

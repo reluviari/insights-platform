@@ -12,13 +12,14 @@ export class UpdateTargetFilterUseCase {
   ) {}
 
   async execute(
+    tenantId: string,
     reportId: string,
     targetFilterId: string,
     body: UpdateTargetFilterDto,
   ): Promise<TargetFilter> {
-    await this.checkReportExists(reportId);
+    await this.checkReportExists(tenantId, reportId);
 
-    const targetFilter = await this.findTargetFilterById(targetFilterId);
+    const targetFilter = await this.findTargetFilterById(reportId, targetFilterId);
 
     const { column, table, displayName } = body;
 
@@ -27,11 +28,11 @@ export class UpdateTargetFilterUseCase {
 
     await this.validateTargetFilterExists(reportId, validateColumn, validateTable);
 
-    return this.updateTargetFilter(targetFilterId, column, table, displayName);
+    return this.updateTargetFilter(reportId, targetFilterId, column, table, displayName);
   }
 
-  private async checkReportExists(reportId: string) {
-    const report = await this.reportRepository.findById(reportId);
+  private async checkReportExists(tenantId: string, reportId: string) {
+    const report = await this.reportRepository.findByIdAndTenantId(reportId, tenantId);
 
     if (!report) {
       throw new ResponseError(ExceptionsConstants.REPORT_NOT_FOUND, HttpStatus.BAD_REQUEST);
@@ -52,8 +53,11 @@ export class UpdateTargetFilterUseCase {
     }
   }
 
-  private async findTargetFilterById(targetFilterId: string) {
-    const targetFilter = await this.targetFilterRepository.findById(targetFilterId);
+  private async findTargetFilterById(reportId: string, targetFilterId: string) {
+    const targetFilter = await this.targetFilterRepository.findByIdAndReportId(
+      targetFilterId,
+      reportId,
+    );
 
     if (!targetFilter) {
       throw new ResponseError(ExceptionsConstants.TARGET_NOT_FOUND, HttpStatus.BAD_REQUEST);
@@ -63,16 +67,21 @@ export class UpdateTargetFilterUseCase {
   }
 
   private async updateTargetFilter(
+    reportId: string,
     targetFilterId: string,
     column?: string,
     table?: string,
     displayName?: string,
   ) {
-    const targetFilter = await this.targetFilterRepository.update(targetFilterId, {
-      column,
-      table,
-      displayName,
-    });
+    const targetFilter = await this.targetFilterRepository.updateByIdAndReportId(
+      targetFilterId,
+      reportId,
+      {
+        column,
+        table,
+        displayName,
+      },
+    );
 
     return targetFilter;
   }

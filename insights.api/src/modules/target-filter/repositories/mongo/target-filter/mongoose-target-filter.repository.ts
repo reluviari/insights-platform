@@ -74,8 +74,32 @@ export class MongooseTargetFilterRepository implements ITargetFilterRepository {
     return targetFilterDoc ? toTargetFilter(targetFilterDoc.toObject()) : null;
   }
 
+  async updateByIdAndReportId(
+    targetFilterId: string,
+    reportId: string,
+    data: UpdateTargetFilter,
+  ): Promise<TargetFilter | null> {
+    const targetFilterDoc = await this.handleErrors(
+      TargetFilterModel.findOneAndUpdate(
+        { _id: targetFilterId, report: reportId },
+        { $set: data },
+        { new: true },
+      ),
+    );
+
+    return targetFilterDoc ? toTargetFilter(targetFilterDoc.toObject()) : null;
+  }
+
   async findById(id: string): Promise<TargetFilter | null> {
     const targetFilterDoc = await this.handleErrors(TargetFilterModel.findById(id).exec());
+
+    return targetFilterDoc ? toTargetFilter(targetFilterDoc.toObject()) : null;
+  }
+
+  async findByIdAndReportId(id: string, reportId: string): Promise<TargetFilter | null> {
+    const targetFilterDoc = await this.handleErrors(
+      TargetFilterModel.findOne({ _id: id, report: reportId }).exec(),
+    );
 
     return targetFilterDoc ? toTargetFilter(targetFilterDoc.toObject()) : null;
   }
@@ -105,5 +129,9 @@ export class MongooseTargetFilterRepository implements ITargetFilterRepository {
 
   async delete(targetFilterId: string): Promise<void> {
     await this.handleErrors(TargetFilterModel.deleteOne({ _id: targetFilterId }));
+  }
+
+  async deleteByIdAndReportId(targetFilterId: string, reportId: string): Promise<void> {
+    await this.handleErrors(TargetFilterModel.deleteOne({ _id: targetFilterId, report: reportId }));
   }
 }

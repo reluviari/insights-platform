@@ -4,6 +4,11 @@ import { Customer } from "../entities";
 import { WhereCustomer } from "./where-customer.interface";
 export interface ICustomerRepository {
   findById(customerId: string, populates?: PopulateOptions[]): Promise<Customer>;
+  findByIdAndTenantId(
+    customerId: string,
+    tenantId: string,
+    populates?: PopulateOptions[],
+  ): Promise<Customer>;
   listAll(
     where?: WhereCustomer,
     page?: number,
@@ -13,5 +18,10 @@ export interface ICustomerRepository {
   count(where?: WhereCustomer): Promise<number>;
   create(data: Customer): Promise<Customer>;
   update(customerId: string, data: UpdateCustomerDto): Promise<Customer>;
+  updateByIdAndTenantId(
+    customerId: string,
+    tenantId: string,
+    data: UpdateCustomerDto,
+  ): Promise<Customer>;
   findByDocument(document: string): Promise<Customer>;
 }

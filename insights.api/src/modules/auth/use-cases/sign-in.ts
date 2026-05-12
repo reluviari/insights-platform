@@ -1,5 +1,6 @@
 import { ExceptionsConstants } from "@/commons/consts/exceptions";
 import { IUserRepository } from "@/modules/user/interfaces";
+import { ITenantRepository } from "@/modules/tenant/interfaces/tenant.repository.interface";
 import jwt, { SignOptions } from "jsonwebtoken";
 import { SignInDto } from "../dtos";
 import { ScopeEnum } from "../enums";
@@ -7,6 +8,10 @@ import { HttpStatus, ResponseError } from "@foundation/lib";
 import { DecodedAccessToken } from "../interfaces";
 import { hashCompareSync } from "@/utils/hash-compare";
 import { isValidUrlSlug } from "@/utils/valid-url-slug";
+import { includesObjectId, sameObjectId } from "@/utils/object-id";
+import { User } from "@/modules/user/entities";
+import { Tenant } from "@/modules/tenant/entities/tenant";
+import { Customer } from "@/modules/customer/entities";
 
 function signInVerbose(reason: string): void {
   if (process.env.INSIGHTS_AUTH_VERBOSE === "1") {
@@ -15,7 +20,10 @@ function signInVerbose(reason: string): void {
 }
 
 export class SignInUseCase {
-  constructor(private userRepository: IUserRepository) {}
+  constructor(
+    private userRepository: IUserRepository,
+    private tenantRepository: ITenantRepository,
+  ) {}
 
   async execute(body: SignInDto) {
     const { email: userEmail, password, urlSlug } = body;
@@ -36,6 +44,12 @@ export class SignInUseCase {
 
     if (!isValidUrlSlug(urlSlug)) {
       throw new ResponseError(ExceptionsConstants.INVALID_URL_SLUG, HttpStatus.BAD_REQUEST);
+    }
+
+    const tenant = await this.tenantRepository.findBySlug(urlSlug);
+
+    if (!tenant?._id) {
+      throw new ResponseError(ExceptionsConstants.TENANT_NOT_FOUND, HttpStatus.BAD_REQUEST);
     }
 
     const normalizedEmail = userEmail.normalize("NFKC").trim().toLowerCase();
@@ -60,6 +74,11 @@ export class SignInUseCase {
       throw new ResponseError(ExceptionsConstants.UNAUTHORIZED, HttpStatus.UNAUTHORIZED);
     }
 
+    if (!userBelongsToTenant(user, tenant)) {
+      signInVerbose("rejected: user_not_in_tenant");
+      throw new ResponseError(ExceptionsConstants.UNAUTHORIZED, HttpStatus.UNAUTHORIZED);
+    }
+
     const { _id, name, email, roles } = user;
 
     const jwtSignOptions: SignOptions = {
@@ -71,6 +90,7 @@ export class SignInUseCase {
         id: _id,
         name,
         urlSlug,
+        tenantId: tenant._id,
         email,
         roles,
         scope: [ScopeEnum.USER_ACCESS_TOKEN],
@@ -85,4 +105,14 @@ export class SignInUseCase {
 
     return { accessToken, userRoles };
   }
+}
+
+function userBelongsToTenant(user: User, tenant: Tenant): boolean {
+  if (includesObjectId(user.tenants as unknown[], tenant._id)) {
+    return true;
+  }
+
+  const customer = user.customer as Customer | undefined;
+
+  return sameObjectId(customer?.tenant, tenant._id);
 }

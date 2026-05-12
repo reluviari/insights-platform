@@ -3,7 +3,8 @@ import { UpdateReportCustomerRequestDto } from "../dtos/update-report-by-custome
 import { ICustomerRepository } from "@/modules/customer/interfaces";
 import { IDepartmentRepository } from "@/modules/department/interfaces";
 import { IReportRepository } from "../interfaces";
-import { checkCustomerExist, checkDepartmentExist, checkReportExist } from "../../../helpers";
+import { HttpStatus, ResponseError } from "@foundation/lib";
+import { ExceptionsConstants } from "@/commons/consts/exceptions";
 
 export class UpdateReportByCustomerUseCase {
   constructor(
@@ -14,6 +15,7 @@ export class UpdateReportByCustomerUseCase {
   ) {}
 
   async execute(
+    tenantId: string,
     customerId: string,
     departmentId: string,
     reportId: string,
@@ -23,11 +25,11 @@ export class UpdateReportByCustomerUseCase {
     const requireUpdatePage = data && data.reportPages ? true : false;
     const requireUpdateFilter = data && data.filters ? true : false;
 
-    await checkCustomerExist(customerId, this.customerRepository);
-    await checkReportExist(reportId, this.reportRepository);
+    await this.checkCustomerExist(tenantId, customerId);
+    await this.checkReportExist(tenantId, reportId);
 
     if (requireDepartment) {
-      await checkDepartmentExist(departmentId, this.departmentRepository);
+      await this.checkDepartmentExist(customerId, departmentId);
     }
 
     if (requireUpdatePage) {
@@ -41,12 +43,41 @@ export class UpdateReportByCustomerUseCase {
     }
 
     if (data?.newDepartmentId) {
-      await this.updateDepartment(data, reportId);
+      await this.updateDepartment(customerId, data, reportId);
     }
   }
 
-  private async updateDepartment(data, reportId) {
-    const department = await checkDepartmentExist(data?.newDepartmentId, this.departmentRepository);
+  private async checkCustomerExist(tenantId: string, customerId: string) {
+    const customer = await this.customerRepository.findByIdAndTenantId(customerId, tenantId);
+
+    if (!customer) {
+      throw new ResponseError(ExceptionsConstants.CUSTOMER_NOT_FOUND, HttpStatus.NOT_FOUND);
+    }
+  }
+
+  private async checkReportExist(tenantId: string, reportId: string) {
+    const report = await this.reportRepository.findByIdAndTenantId(reportId, tenantId);
+
+    if (!report) {
+      throw new ResponseError(ExceptionsConstants.REPORT_NOT_FOUND, HttpStatus.NOT_FOUND);
+    }
+  }
+
+  private async checkDepartmentExist(customerId: string, departmentId: string) {
+    const department = await this.departmentRepository.findByIdAndCustomerId(
+      departmentId,
+      customerId,
+    );
+
+    if (!department) {
+      throw new ResponseError(ExceptionsConstants.DEPARTMENT_NOT_FOUND, HttpStatus.NOT_FOUND);
+    }
+
+    return department;
+  }
+
+  private async updateDepartment(customerId, data, reportId) {
+    const department = await this.checkDepartmentExist(customerId, data?.newDepartmentId);
 
     const uniqueReports = await this.uniqueReports(reportId, department);
     const uniqueReportPages = await this.uniqueReportPages(data, department);

@@ -18,36 +18,40 @@ export class AttachReportToDepartmentsUseCase {
   ) {}
 
   async execute(
+    tenantId: string,
     customerId: string,
     reportId: string,
     data: AttachReportToDepartmentsDto,
   ): Promise<void> {
     await Promise.all([
-      this.validateCustomer(customerId),
-      this.validateReport(reportId),
-      this.validateDepartment(data.departmentId),
+      this.validateCustomer(tenantId, customerId),
+      this.validateReport(tenantId, reportId),
+      this.validateDepartment(customerId, data.departmentId),
     ]);
 
     return this.addReportToDepartments(customerId, reportId, data);
   }
 
-  async validateCustomer(customerId: string) {
-    const customer = await this.customerRepository.findById(customerId);
+  async validateCustomer(tenantId: string, customerId: string) {
+    const customer = await this.customerRepository.findByIdAndTenantId(customerId, tenantId);
 
     if (!customer) {
       throw new ResponseError(ExceptionsConstants.CUSTOMER_NOT_FOUND, HttpStatus.BAD_REQUEST);
     }
   }
 
-  async validateReport(reportId: string) {
-    const report = await this.reportRepository.findById(reportId);
+  async validateReport(tenantId: string, reportId: string) {
+    const report = await this.reportRepository.findByIdAndTenantId(reportId, tenantId);
     if (!report) {
       throw new ResponseError(ExceptionsConstants.REPORT_NOT_FOUND, HttpStatus.BAD_REQUEST);
     }
   }
 
-  async validateDepartment(departmentId: string) {
-    const department = await this.departmentRepository.findById(departmentId);
+  async validateDepartment(customerId: string, departmentId: string) {
+    const department = await this.departmentRepository.findByIdAndCustomerId(
+      departmentId,
+      customerId,
+    );
 
     if (!department) {
       throw new ResponseError(ExceptionsConstants.DEPARTMENT_NOT_FOUND, HttpStatus.BAD_REQUEST);

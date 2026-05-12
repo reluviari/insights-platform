@@ -11,17 +11,21 @@ export class CreateTargetFilterUseCase {
     private reportRepository: IReportRepository,
   ) {}
 
-  async execute(reportId: string, body: CreateTargetFilterDto): Promise<TargetFilter> {
+  async execute(
+    tenantId: string,
+    reportId: string,
+    body: CreateTargetFilterDto,
+  ): Promise<TargetFilter> {
     const { column, table, displayName } = body;
 
-    await this.checkReportExists(reportId);
+    await this.checkReportExists(tenantId, reportId);
     await this.validateTargetFilterExists(reportId, column, table);
 
     return this.createTargetFilter(reportId, column, table, displayName);
   }
 
-  private async checkReportExists(reportId: string) {
-    const report = await this.reportRepository.findById(reportId);
+  private async checkReportExists(tenantId: string, reportId: string) {
+    const report = await this.reportRepository.findByIdAndTenantId(reportId, tenantId);
 
     if (!report) {
       throw new ResponseError(ExceptionsConstants.REPORT_NOT_FOUND, HttpStatus.BAD_REQUEST);

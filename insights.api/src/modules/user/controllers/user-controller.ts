@@ -34,9 +34,9 @@ export class UserController {
   @Method()
   public async findById(
     @Params(UserParamsDto) { customerId, userId }: UserParamsDto,
-    @User { urlSlug }: SessionUser,
+    @User { tenantId }: SessionUser,
   ): Promise<GetUserDetailsDto> {
-    const user = await this.userService.findById(urlSlug, customerId, userId);
+    const user = await this.userService.findById(tenantId, customerId, userId);
 
     return GetUserDetailsDto.factory(GetUserDetailsDto, user);
   }
@@ -48,8 +48,9 @@ export class UserController {
   async create(
     @Body(CreateUserDto) body: CreateUserDto,
     @Params(UserParamsDto) { customerId }: UserParamsDto,
+    @User { tenantId }: SessionUser,
   ): Promise<GetUserDto> {
-    const user = await this.userService.create(customerId, body);
+    const user = await this.userService.create(tenantId, customerId, body);
 
     return GetUserDto.factory(GetUserDto, user);
   }
@@ -61,8 +62,9 @@ export class UserController {
   async update(
     @Body(UpdateUserDto) body: UpdateUserDto,
     @Params(UpdateUserParamsDto) { userId }: UpdateUserParamsDto,
+    @User { tenantId }: SessionUser,
   ): Promise<GetUserDto> {
-    const user = await this.userService.update(userId, body);
+    const user = await this.userService.update(tenantId, userId, body);
     return GetUserDto.factory(GetUserDto, user);
   }
 
@@ -88,7 +90,7 @@ export class UserController {
   }
 }
 
-const findByIdUseCase = new FindByIdUseCase(userRepository, tenantRepository, customerRepository);
+const findByIdUseCase = new FindByIdUseCase(userRepository, customerRepository);
 
 const listUserByTenantUrlSlugUseCase = new ListUserByTenantUrlSlugUseCase(
   userRepository,

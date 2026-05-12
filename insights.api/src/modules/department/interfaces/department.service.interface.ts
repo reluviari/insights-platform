@@ -4,15 +4,20 @@ import { CreateDepartmentType } from "../types/create-department.type";
 import { ListDepartment } from "./list-department.interface";
 
 export interface IDepartmentService {
-  create(customerId: string, data: CreateDepartmentType): Promise<Department>;
-  delete(customerId: string): Promise<void>;
+  create(tenantId: string, customerId: string, data: CreateDepartmentType): Promise<Department>;
+  delete(tenantId: string, customerId: string, departmentId: string): Promise<void>;
   updateReportPage(
+    tenantId: string,
     customerId: string,
     departmentId: string,
     reportId: string,
     body: ReportPageDto,
   ): Promise<void>;
-  getDepartmentById(customerId: string, departmentId: string): Promise<Department>;
+  getDepartmentById(
+    tenantId: string,
+    customerId: string,
+    departmentId: string,
+  ): Promise<Department>;
   listByCustomerId(
     customerId: string,
     urlSlug: string,

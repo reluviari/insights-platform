@@ -4,6 +4,9 @@ import { ExceptionsConstants } from "@/commons/consts/exceptions";
 import { ScopeEnum } from "@/modules/auth/enums";
 import { HttpResponse, HttpStatus, ResponseError } from "@foundation/lib";
 import { userRepository } from "@/modules/user/repositories/mongo/user/user.repository";
+import { includesObjectId, sameObjectId } from "@/utils/object-id";
+import { Customer } from "@/modules/customer/entities";
+import { User } from "@/modules/user/entities";
 
 export function Authorize() {
   return function (
@@ -54,6 +57,7 @@ const verifyJWTToken = (jwtToken: string, event: any): Promise<any> => {
       ) => {
         if (err) {
           reject(new ResponseError(ExceptionsConstants.INVALID_TOKEN, HttpStatus.UNAUTHORIZED));
+          return;
         }
 
         try {
@@ -63,6 +67,7 @@ const verifyJWTToken = (jwtToken: string, event: any): Promise<any> => {
             email: decodedCustomToken.email,
             roles: decodedCustomToken.roles,
             urlSlug: decodedCustomToken.urlSlug,
+            tenantId: decodedCustomToken.tenantId,
           };
           resolve(event.user);
         } catch (error) {
@@ -74,7 +79,11 @@ const verifyJWTToken = (jwtToken: string, event: any): Promise<any> => {
 };
 
 const validate = async (jwtPayload: DecodedAccessToken) => {
-  const { id, scope, exp, iat } = jwtPayload;
+  const { id, scope, exp, iat, tenantId } = jwtPayload;
+
+  if (!tenantId) {
+    throw new ResponseError(ExceptionsConstants.INVALID_TOKEN, HttpStatus.UNAUTHORIZED);
+  }
 
   const dateFromUnixTimestamp = new Date(exp * 1000).getTime();
   const now = new Date().getTime();
@@ -90,10 +99,28 @@ const validate = async (jwtPayload: DecodedAccessToken) => {
 
   const user = await userRepository.findUserById(id);
 
+  if (!user || !user.isActive) {
+    throw new ResponseError(ExceptionsConstants.UNAUTHORIZED, HttpStatus.UNAUTHORIZED);
+  }
+
+  if (!userBelongsToTenant(user, tenantId)) {
+    throw new ResponseError(ExceptionsConstants.UNAUTHORIZED, HttpStatus.UNAUTHORIZED);
+  }
+
   if (user.createdTokenAt && iat < user.createdTokenAt) {
     throw new ResponseError(ExceptionsConstants.NEW_ACTIVE_TOKEN, HttpStatus.UNAUTHORIZED);
   }
 };
+
+function userBelongsToTenant(user: User, tenantId: string): boolean {
+  if (includesObjectId(user.tenants as unknown[], tenantId)) {
+    return true;
+  }
+
+  const customer = user.customer as Customer | undefined;
+
+  return sameObjectId(customer?.tenant, tenantId);
+}
 
 function extractEvent(args: any[]): any | null {
   for (const arg of args) {

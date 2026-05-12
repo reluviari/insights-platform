@@ -17,28 +17,37 @@ export class DepartmentService implements IDepartmentService {
     private getDepartmentByIdUseCase: GetDepartmentByIdUseCase,
   ) {}
 
-  async create(customerId: string, data: CreateDepartmentType): Promise<Department> {
-    return this.createDepartmentUseCase.execute(customerId, data);
+  async create(
+    tenantId: string,
+    customerId: string,
+    data: CreateDepartmentType,
+  ): Promise<Department> {
+    return this.createDepartmentUseCase.execute(tenantId, customerId, data);
   }
 
-  async delete(customerId: string): Promise<void> {
-    await this.deleteDepartmentUseCase.execute(customerId);
+  async delete(tenantId: string, customerId: string, departmentId: string): Promise<void> {
+    await this.deleteDepartmentUseCase.execute(tenantId, customerId, departmentId);
   }
 
   async updateReportPage(
+    tenantId: string,
     customerId: string,
     departmentId: string,
     reportId: string,
     body: ReportPageDto,
   ) {
-    await this.updateReportPageUseCase.execute(customerId, departmentId, reportId, body);
+    await this.updateReportPageUseCase.execute(tenantId, customerId, departmentId, reportId, body);
   }
 
   async listByCustomerId(customerId: string, userId: string, where: FilterDepartmentDto) {
     return this.listDepartmentByCustomerIdUseCase.execute(customerId, userId, where);
   }
 
-  async getDepartmentById(customerId: string, departmentId: string): Promise<Department> {
-    return this.getDepartmentByIdUseCase.execute(customerId, departmentId);
+  async getDepartmentById(
+    tenantId: string,
+    customerId: string,
+    departmentId: string,
+  ): Promise<Department> {
+    return this.getDepartmentByIdUseCase.execute(tenantId, customerId, departmentId);
   }
 }

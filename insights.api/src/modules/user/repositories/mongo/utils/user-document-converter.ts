@@ -21,30 +21,28 @@ export function toUser(doc: any): User {
         : doc?.customer?.toString(),
     tenants:
       tenants.length > 0
-        ? tenants.map((tenant: unknown) =>
-            !Types.ObjectId.isValid(tenant) ? toTenant(tenant) : (tenant as any)?.toString(),
+        ? tenants.map((tenant: any) =>
+            !Types.ObjectId.isValid(tenant) ? toTenant(tenant) : tenant?.toString(),
           )
         : [],
     departments:
       departments.length > 0
-        ? departments.map((department: unknown) =>
-            !Types.ObjectId.isValid(department)
-              ? toDepartment(department)
-              : (department as any)?.toString(),
+        ? departments.map((department: any) =>
+            !Types.ObjectId.isValid(department) ? toDepartment(department) : department?.toString(),
           )
         : [],
     reports:
       reports.length > 0
-        ? reports.map((report: unknown) =>
-            !Types.ObjectId.isValid(report) ? toReport(report) : (report as any)?.toString(),
+        ? reports.map((report: any) =>
+            !Types.ObjectId.isValid(report) ? toReport(report) : report?.toString(),
           )
         : [],
     reportFilters:
       reportFilters.length > 0
-        ? reportFilters.map((reportFilter: unknown) =>
+        ? reportFilters.map((reportFilter: any) =>
             !Types.ObjectId.isValid(reportFilter)
               ? toReportFilter(reportFilter)
-              : (reportFilter as any)?.toString(),
+              : reportFilter?.toString(),
           )
         : [],
   };

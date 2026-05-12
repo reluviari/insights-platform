@@ -6,7 +6,10 @@ import { EmbedTokenUseCase } from "../use-cases/embed-token";
 export class EmbedTokenService implements ITokenService {
   constructor(private embedTokenUseCase: EmbedTokenUseCase) {}
 
-  embedToken(userId: string, body: EmbedTokenInputType): Promise<EmbedTokenOutputType> {
-    return this.embedTokenUseCase.execute(userId, body);
+  embedToken(
+    user: { id: string; tenantId: string; roles?: string[] },
+    body: EmbedTokenInputType,
+  ): Promise<EmbedTokenOutputType> {
+    return this.embedTokenUseCase.execute(user, body);
   }
 }

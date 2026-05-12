@@ -7,14 +7,14 @@ import { Customer } from "../entities";
 export class UpdateCustomerUseCase {
   constructor(private customerRepository: ICustomerRepository) {}
 
-  async execute(customerId: string, data: UpdateCustomerDto): Promise<Customer> {
-    await this.checkCustomerExist(customerId);
+  async execute(tenantId: string, customerId: string, data: UpdateCustomerDto): Promise<Customer> {
+    await this.checkCustomerExist(tenantId, customerId);
 
-    return this.customerRepository.update(customerId, data);
+    return this.customerRepository.updateByIdAndTenantId(customerId, tenantId, data);
   }
 
-  private async checkCustomerExist(customerId: string) {
-    const customer = await this.customerRepository.findById(customerId);
+  private async checkCustomerExist(tenantId: string, customerId: string) {
+    const customer = await this.customerRepository.findByIdAndTenantId(customerId, tenantId);
 
     if (!customer) {
       throw new ResponseError(ExceptionsConstants.CUSTOMER_NOT_FOUND, HttpStatus.NOT_FOUND);
